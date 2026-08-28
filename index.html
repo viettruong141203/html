@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-width=1.0">
+    <title>Nova Editor - Lưu trữ đám mây ảo</title>
+    <style>
+        /* --- BIẾN MÀU SẮC (PREMIUM DARK) --- */
+        :root {
+            --bg-color: #09090b;       
+            --panel-bg: #18181b;       
+            --border-color: #27272a;   
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --accent-primary: #8b5cf6; 
+            --accent-secondary: #06b6d4; 
+            --success-color: #10b981;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- THANH ĐIỀU HƯỚNG --- */
+        .navbar {
+            height: 55px;
+            background-color: rgba(9, 9, 11, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; z-index: 10;
+        }
+
+        .brand {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; font-size: 16px; letter-spacing: 0.5px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .nav-actions { display: flex; gap: 10px; }
+
+        .btn {
+            background: #27272a; color: var(--text-main);
+            border: 1px solid #3f3f46; padding: 8px 14px;
+            border-radius: 6px; font-size: 13px; font-weight: 500;
+            cursor: pointer; display: flex; align-items: center; gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover { background: #3f3f46; border-color: #52525b; }
+
+        /* Nút Lưu (Save) */
+        .btn-save {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        .btn-save:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        /* Nút Mở Web (Glow) */
+        .btn-glow {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+        .btn-glow:hover {
+            background: linear-gradient(135deg, #7c3aed, #0891b2);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5); transform: translateY(-1px);
+        }
+
+        /* --- KHU VỰC LÀM VIỆC --- */
+        .workspace {
+            display: flex; flex: 1; height: calc(100vh - 55px);
+            padding: 15px; gap: 0; 
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px; display: flex; flex-direction: column;
+            overflow: hidden; position: relative;
+        }
+
+        #panel-left { width: 50%; } 
+        #panel-right { flex: 1; }
+
+        .panel-header {
+            height: 40px; background-color: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; padding: 0 15px;
+            font-size: 12px; color: var(--text-muted); font-weight: 600;
+            letter-spacing: 0.5px; gap: 8px; justify-content: space-between;
+        }
+
+        .panel-header-left { display: flex; align-items: center; gap: 8px; }
+        .panel-header i { color: var(--accent-secondary); font-style: normal;}
+
+        /* Status chữ nhỏ "Chưa lưu" */
+        #saveStatus { color: #f59e0b; font-size: 11px; opacity: 0; transition: opacity 0.3s; }
+
+        /* --- THANH KÉO (RESIZER) --- */
+        .resizer {
+            width: 12px; cursor: col-resize; display: flex;
+            justify-content: center; align-items: center; position: relative; z-index: 5;
+        }
+        .resizer::after {
+            content: ''; width: 4px; height: 40px; background-color: var(--border-color);
+            border-radius: 4px; transition: 0.2s ease;
+        }
+        .resizer:hover::after, .resizer.active::after {
+            background-color: var(--accent-primary); box-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        /* --- TEXTAREA --- */
+        textarea {
+            flex: 1; width: 100%; padding: 20px; background: transparent;
+            color: #e2e8f0; border: none; resize: none; outline: none;
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 14.5px; line-height: 1.7;
+        }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 5px; border: 2px solid var(--panel-bg); }
+        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+
+        iframe { flex: 1; width: 100%; height: 100%; border: none; background-color: #ffffff; }
+
+        /* --- THÔNG BÁO TOAST (POPUP LƯU THÀNH CÔNG) --- */
+        .toast {
+            position: fixed; bottom: -50px; left: 50%; transform: translateX(-50%);
+            background: var(--success-color); color: white;
+            padding: 10px 20px; border-radius: 30px; font-size: 14px; font-weight: 500;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100; pointer-events: none;
+        }
+        .toast.show { bottom: 30px; }
+
+    </style>
+</head>
+<body>
+
+    <!-- THANH ĐIỀU HƯỚNG -->
+    <nav class="navbar">
+        <div class="brand">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;stroke:var(--accent-secondary)">
+                <polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            <span>NOVA EDITOR</span>
+        </div>
+        <div class="nav-actions">
+            <button class="btn" onclick="clearCode()">Xóa</button>
+            <button class="btn btn-save" onclick="saveCode()" title="Phím tắt: Ctrl + S">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Lưu Code
+            </button>
+            <button class="btn btn-glow" onclick="openNewTab()">Mở Tab Web</button>
+        </div>
+    </nav>
+
+    <!-- KHU VỰC CHIA MÀN HÌNH -->
+    <main class="workspace">
+        <div class="panel" id="panel-left">
+            <div class="panel-header">
+                <div class="panel-header-left">
+                    <i>{ }</i> index.html
+                </div>
+                <span id="saveStatus">● Có thay đổi chưa lưu</span>
+            </div>
+            <textarea id="codeEditor" spellcheck="false" placeholder="<!-- Bắt đầu viết mã HTML tại đây... -->"></textarea>
+        </div>
+
+        <div class="resizer" id="dragMe"></div>
+
+        <div class="panel" id="panel-right">
+            <div class="panel-header">
+                <div class="panel-header-left"><i>⚡</i> Live Preview</div>
+            </div>
+            <iframe id="previewFrame"></iframe>
+        </div>
+    </main>
+
+    <!-- POPUP THÔNG BÁO -->
+    <div id="toast" class="toast">✓ Đã lưu tiến độ làm việc!</div>
+
+    <script>
+        const editor = document.getElementById('codeEditor');
+        const preview = document.getElementById('previewFrame');
+        const saveStatus = document.getElementById('saveStatus');
+        const toast = document.getElementById('toast');
+        const STORAGE_KEY = 'nova_editor_saved_code'; // Tên chìa khóa để lưu trong bộ nhớ
+
+        // --- 1. KHỞI ĐỘNG: KIỂM TRA BỘ NHỚ TRÌNH DUYỆT ---
+        window.onload = function() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                editor.value = savedData; // Nếu có dữ liệu cũ, nhét lại vào khung
+            }
+            updatePreview();
+            editor.focus();
+        };
+
+        // --- 2. HÀM LƯU CODE (GHI NHỚ) ---
+        function saveCode() {
+            localStorage.setItem(STORAGE_KEY, editor.value); // Lưu vào máy
+            saveStatus.style.opacity = '0'; // Ẩn chữ "Có thay đổi chưa lưu"
+            
+            // Hiện thông báo (Toast)
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // --- 3. LIVE PREVIEW VÀ BÁO HIỆU CHƯA LƯU ---
+        function updatePreview() {
+            const iframeDoc = preview.contentDocument || preview.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(editor.value);
+            iframeDoc.close();
+        }
+
+        editor.addEventListener('input', function() {
+            updatePreview();
+            // Khi gõ cái gì đó mới, hiện đèn báo vàng "Chưa lưu"
+            if(localStorage.getItem(STORAGE_KEY) !== editor.value) {
+                saveStatus.style.opacity = '1';
+            } else {
+                saveStatus.style.opacity = '0';
+            }
+        });
+
+        // --- 4. BẮT PHÍM TẮT CTRL + S ---
+        document.addEventListener('keydown', function(event) {
+            if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                event.preventDefault();
+                saveCode();
+            }
+        });
+
+        // --- 5. NÚT XÓA (XÓA CẢ BỘ NHỚ) ---
+        function clearCode() {
+            if(confirm("Bạn có chắc chắn muốn xóa toàn bộ code (Kể cả bản đã lưu) không?")) {
+                editor.value = '';
+                localStorage.removeItem(STORAGE_KEY); // Xóa sạch bộ nhớ
+                saveStatus.style.opacity = '0';
+                updatePreview();
+                editor.focus();
+            }
+        }
+
+        // --- 6. MỞ TRANG WEB TAB MỚI ---
+        function openNewTab() {
+            const newTab = window.open();
+            newTab.document.open();
+            newTab.document.write(editor.value);
+            newTab.document.close();
+            newTab.document.title = "Nova Preview";
+        }
+
+        // --- 7. BẤM TAB THỤT LỀ ---
+        editor.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + "  " + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 2;
+                updatePreview();
+                saveStatus.style.opacity = '1';
+            }
+        });
+
+        // --- 8. KÉO THẢ CHIA MÀN HÌNH ---
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('panel-left');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isResizing = true;
+            resizer.classList.add('active'); 
+            document.body.style.cursor = 'col-resize';
+            preview.style.pointerEvents = 'none'; 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+            const containerWidth = document.querySelector('.workspace').offsetWidth;
+            const newWidth = (e.clientX / containerWidth) * 100;
+            if (newWidth > 10 && newWidth < 90) {
+                leftPanel.style.width = newWidth + '%';
+            }
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isResizing) {
+                isResizing = false;
+                resizer.classList.remove('active');
+                document.body.style.cursor = 'default';
+                preview.style.pointerEvents = 'auto'; 
+            }
+        });
+    </script>
+</body>
+      </html>
+      
