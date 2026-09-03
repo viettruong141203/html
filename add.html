@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGÂN HÀNG - Thêm Mới</title>
+    <!-- Favicon chuẩn VietQR -->
+    <link rel="icon" type="image/png" href="https://api.vietqr.io/img/vietqr-net-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10B981; 
+            --primary-hover: #059669;
+            --primary-light: #D1FAE5;
+            --bg: #F8FAFC;
+            --surface: #FFFFFF;
+            --text-main: #0F172A;
+            --text-sub: #64748B;
+            --border: #E2E8F0;
+            --input-bg: #F8FAFC;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(at 0% 0%, hsla(152, 100%, 93%, 1) 0px, transparent 50%),
+                              radial-gradient(at 100% 100%, hsla(214, 100%, 93%, 1) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05), 0 10px 15px -5px rgba(0, 0, 0, 0.02);
+            width: 100%;
+            max-width: 460px;
+            box-sizing: border-box;
+            border: 1px solid rgba(255,255,255,0.8);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header gọn gàng */
+        .app-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .app-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+        .app-header p {
+            margin: 6px 0 0 0;
+            font-size: 13.5px;
+            color: var(--text-sub);
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+            position: relative;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #475569;
+        }
+
+        /* Input có Icon bên trong */
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            color: #94A3B8;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+        .form-control {
+            width: 100%;
+            padding: 14px 14px 14px 44px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            background: var(--input-bg);
+            color: var(--text-main);
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .form-control:focus {
+            background: #FFF;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+        }
+        .form-control:focus + .input-icon, 
+        .input-wrapper:focus-within .input-icon {
+            color: var(--primary);
+        }
+
+        /* Dropdown Ngân Hàng */
+        .select-box {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; padding: 12px 16px; border: 1.5px solid var(--border);
+            border-radius: 12px; cursor: pointer; background: var(--input-bg);
+            box-sizing: border-box; min-height: 52px; transition: all 0.2s ease;
+        }
+        .select-box:focus, .select-box.active {
+            background: #FFF; border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15); outline: none;
+        }
+        .selected-bank { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; }
+        .selected-bank img {
+            width: 28px; height: 28px; object-fit: contain; border-radius: 6px;
+            background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .dropdown-list {
+            position: absolute; top: 100%; left: 0; right: 0; margin-top: 8px;
+            background: #fff; border: 1px solid var(--border); border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-height: 280px; overflow-y: auto;
+            z-index: 100; opacity: 0; visibility: hidden; transform: translateY(-10px);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .dropdown-list.active { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-list::-webkit-scrollbar { width: 6px; }
+        .dropdown-list::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+
+        .search-box {
+            padding: 12px; position: sticky; top: 0; background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(4px); border-bottom: 1px solid var(--border); z-index: 2;
+        }
+        .search-box input {
+            width: 100%; padding: 10px 14px 10px 36px; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 13px; outline: none; box-sizing: border-box;
+            background: var(--input-bg) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%2394A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat 12px center;
+        }
+        .search-box input:focus { border-color: var(--primary); background-color: #fff; }
+
+        .bank-item {
+            display: flex; align-items: center; padding: 12px 16px; cursor: pointer; transition: background 0.1s;
+        }
+        .bank-item:hover { background-color: var(--primary-light); }
+        .bank-item:not(:last-child) { border-bottom: 1px solid #F1F5F9; }
+        .bank-item img {
+            width: 36px; height: 36px; object-fit: contain; margin-right: 14px;
+            border-radius: 8px; border: 1px solid #F1F5F9; padding: 2px;
+        }
+        .bank-name-short { font-weight: 700; font-size: 13px; color: var(--text-main); }
+        .bank-name-full { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+
+        /* Nút Submit */
+        .btn-submit {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+            color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 15px;
+            cursor: pointer; margin-top: 10px; transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4); }
+        .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%; height: 6px; background-color: #E2E8F0; border-radius: 10px;
+            margin-top: 20px; margin-bottom: 8px; overflow: hidden; display: none;
+        }
+        .progress-bar {
+            height: 100%; width: 0%; background-color: var(--primary);
+            border-radius: 10px; transition: width 0.3s ease;
+        }
+        .progress-text {
+            text-align: center; font-size: 12px; color: var(--text-sub);
+            display: none; margin-bottom: 15px; font-weight: 500;
+        }
+
+        /* Alert Thông báo */
+        .alert {
+            padding: 14px 16px; border-radius: 12px; margin-top: 16px; font-size: 13px;
+            display: none; text-align: center; font-weight: 600; animation: fadeIn 0.3s ease;
+        }
+        .alert-success { background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0; }
+        .alert-error { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="app-header">
+        <h1>THÊM NGÂN HÀNG</h1>
+        <p>Liên kết tài khoản mới vào hệ thống</p>
+    </div>
+
+    <form id="addForm">
+        <!-- 1. Chọn ngân hàng -->
+        <div class="form-group">
+            <label>Ngân hàng thụ hưởng *</label>
+            <!-- LƯU MÃ BIN -->
+            <input type="hidden" id="bankBinCode" required>
+            
+            <div class="select-box" id="selectBox" tabindex="0">
+                <div class="selected-bank" id="selectedBank">
+                    <span style="color: #94A3B8; font-weight: 400;">Nhấn để chọn ngân hàng...</span>
+                </div>
+                <svg style="color: #94A3B8;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+
+            <div class="dropdown-list" id="dropdownList">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Tìm tên hoặc mã (VD: VCB)...">
+                </div>
+                <div id="bankList"></div>
+            </div>
+        </div>
+
+        <!-- 2. Số tài khoản -->
+        <div class="form-group">
+            <label for="accNumber">Số tài khoản / Chuỗi định danh *</label>
+            <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                <input type="text" id="accNumber" class="form-control" placeholder="Nhập số tài khoản" required>
+            </div>
+        </div>
+
+        <!-- 3. Tên chủ tài khoản -->
+        <div class="form-group">
+            <label for="accOwner">Tên người thụ hưởng *</label>
+            <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <input type="text" id="accOwner" class="form-control" placeholder="VD: NGUYEN VAN A" style="text-transform: uppercase;" required>
+            </div>
+        </div>
+
+        <!-- Vùng tiến độ tải -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText">Đang liên kết: 0%</div>
+
+        <button type="submit" id="btnSubmit" class="btn-submit">Lưu Thông Tin</button>
+    </form>
+    
+    <!-- Thông báo kết quả -->
+    <div id="alertBox" class="alert"></div>
+</div>
+
+<script>
+    // Điền Link Google Apps Script của bạn vào đây
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzgeZU6ik9YDR8_dmP8cqsjlWOVyW-lX9J_mMGVONdSZnzhr_tj7UoRlKJTMz-TQYSYfg/exec';
+
+    let banksData = [];
+    const selectBox = document.getElementById('selectBox');
+    const dropdownList = document.getElementById('dropdownList');
+    const bankList = document.getElementById('bankList');
+    const searchInput = document.getElementById('searchInput');
+    const selectedBank = document.getElementById('selectedBank');
+    const bankBinCode = document.getElementById('bankBinCode');
+
+    // Fetch API VietQR
+    async function loadBanks() {
+        try {
+            const res = await fetch('https://api.vietqr.io/v2/banks');
+            const json = await res.json();
+            if(json.code === '00') {
+                banksData = json.data;
+                renderBanks(banksData);
+            }
+        } catch (e) { console.error('Lỗi tải danh sách ngân hàng'); }
+    }
+
+    function renderBanks(list) {
+        bankList.innerHTML = '';
+        list.forEach(bank => {
+            const item = document.createElement('div');
+            item.className = 'bank-item';
+            item.innerHTML = `
+                <img src="${bank.logo}" alt="logo">
+                <div style="display: flex; flex-direction: column;">
+                    <span class="bank-name-short">${bank.shortName}</span>
+                    <span class="bank-name-full">${bank.name}</span>
+                </div>
+            `;
+            item.onclick = () => {
+                bankBinCode.value = bank.bin; 
+                selectedBank.innerHTML = `<img src="${bank.logo}"> <span>${bank.shortName}</span>`;
+                dropdownList.classList.remove('active');
+                selectBox.classList.remove('active');
+            };
+            bankList.appendChild(item);
+        });
+    }
+
+    // Hiệu ứng Dropdown
+    selectBox.onclick = () => {
+        dropdownList.classList.toggle('active');
+        selectBox.classList.toggle('active');
+        if (dropdownList.classList.contains('active')) searchInput.focus();
+    };
+
+    searchInput.oninput = (e) => {
+        const val = e.target.value.toLowerCase();
+        renderBanks(banksData.filter(b => b.shortName.toLowerCase().includes(val) || b.name.toLowerCase().includes(val) || (b.bin && b.bin.toString().includes(val))));
+    };
+
+    document.onclick = (e) => {
+        if(!selectBox.contains(e.target) && !dropdownList.contains(e.target)) {
+            dropdownList.classList.remove('active');
+            selectBox.classList.remove('active');
+        }
+    };
+    
+    loadBanks();
+
+    // XỬ LÝ GỬI FORM (HÀNH ĐỘNG THÊM - action: "add")
+    const form = document.getElementById('addForm');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const alertBox = document.getElementById('alertBox');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+
+        if (!bankBinCode.value) {
+            showAlert('Vui lòng chọn ngân hàng!', 'error');
+            return;
+        }
+
+        // TẠO GÓI DỮ LIỆU ĐÚNG CHUẨN BẠN YÊU CẦU
+        const payload = {
+            "sheet": "Ngân hàng",
+            "action": "add", 
+            "bin": bankBinCode.value,
+            "accNumber": document.getElementById('accNumber').value.trim(),
+            "accOwner": document.getElementById('accOwner').value.trim().toUpperCase()
+        };
+
+        // Giao diện loading
+        btnSubmit.disabled = true; 
+        btnSubmit.textContent = "Đang xử lý..."; 
+        alertBox.style.display = 'none';
+        
+        progressContainer.style.display = 'block'; 
+        progressText.style.display = 'block'; 
+        progressBar.style.width = '0%';
+        
+        let percent = 0;
+        let progressInterval = setInterval(() => {
+            if (percent < 85) { 
+                percent += Math.floor(Math.random() * 10) + 5; 
+                if (percent > 85) percent = 85; 
+                progressBar.style.width = percent + '%'; 
+                progressText.textContent = `Đang kết nối: ${percent}%`;
+            }
+        }, 150); 
+
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+
+            clearInterval(progressInterval); 
+            progressBar.style.width = '100%'; 
+            progressText.textContent = `Hoàn tất: 100%`;
+
+            setTimeout(() => {
+                progressContainer.style.display = 'none'; 
+                progressText.style.display = 'none';
+                
+                // KIỂM TRA PHẢN HỒI {"success": true, "message": "..."}
+                if (result.success === true) {
+                    // Lấy message từ server trả về, hoặc dùng câu mặc định
+                    showAlert(result.message || 'Thêm tài khoản thành công!', 'success');
+                    
+                    // Reset form sau khi thêm
+                    form.reset();
+                    bankBinCode.value = '';
+                    selectedBank.innerHTML = '<span style="color: #94A3B8; font-weight: 400;">Nhấn để chọn ngân hàng...</span>';
+                } else {
+                    showAlert('Lỗi: ' + (result.message || 'Thao tác không thành công'), 'error');
+                }
+                
+                btnSubmit.disabled = false; 
+                btnSubmit.textContent = "Lưu Thông Tin";
+            }, 500);
+
+        } catch (error) {
+            clearInterval(progressInterval); 
+            progressBar.style.width = '100%'; 
+            progressBar.style.backgroundColor = '#EF4444'; 
+            progressText.textContent = `Lỗi kết nối!`;
+            
+            setTimeout(() => {
+                progressContainer.style.display = 'none'; 
+                progressText.style.display = 'none'; 
+                progressBar.style.backgroundColor = 'var(--primary)';
+                showAlert('Lỗi kết nối mạng! Vui lòng thử lại.', 'error');
+                
+                btnSubmit.disabled = false; 
+                btnSubmit.textContent = "Lưu Thông Tin";
+            }, 1000);
+        }
+    };
+
+    function showAlert(msg, type) {
+        alertBox.textContent = msg; 
+        alertBox.className = `alert alert-${type}`; 
+        alertBox.style.display = 'block';
+    }
+</script>
+</body>
+</html>
