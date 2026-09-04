@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyberpunk Payment Gateway</title>
+    <title>Cổng Thanh Toán Cao Cấp</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         * {
             box-sizing: border-box;
@@ -14,104 +14,80 @@
         }
 
         body {
-            /* Font chữ đậm chất công nghệ */
-            font-family: 'Rajdhani', sans-serif;
-            background-color: #050a10;
-            /* Nền lưới Grid Cyberpunk */
-            background-image: 
-                linear-gradient(rgba(0, 210, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 210, 255, 0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
-            background-position: center center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #000000;
+            /* Nền gradient tối sang trọng */
+            background-image: radial-gradient(circle at 50% 0%, #1f2937 0%, #000000 70%);
+            background-attachment: fixed;
             color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            position: relative;
         }
 
         .main-container {
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             z-index: 10;
         }
 
-        /* ----- Thẻ Thông Tin Chính ----- */
+        /* ----- Thẻ Card Chính ----- */
         .payment-card {
-            background: #09101a;
-            border-radius: 16px;
-            padding: 35px 25px;
-            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8), 
-                        inset 0 0 0 1px rgba(0, 210, 255, 0.2);
-            position: relative;
+            background: rgba(24, 24, 27, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 30px 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             flex-direction: column;
             align-items: center;
-            animation: glitchFade 0.8s ease-out;
+            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* Góc trang trí kiểu vi mạch */
-        .payment-card::before, .payment-card::after {
-            content: '';
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            border: 2px solid #00d2ff;
-            opacity: 0.7;
-            pointer-events: none;
-        }
-        .payment-card::before {
-            top: -2px; left: -2px;
-            border-right: transparent; border-bottom: transparent;
-        }
-        .payment-card::after {
-            bottom: -2px; right: -2px;
-            border-left: transparent; border-top: transparent;
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes glitchFade {
-            from { opacity: 0; transform: translateY(20px); filter: brightness(2); }
-            to { opacity: 1; transform: translateY(0); filter: brightness(1); }
+        /* ----- Logo Cắt Viền Đầu Trang ----- */
+        .top-logo-container {
+            margin-bottom: 20px;
         }
 
-        /* ----- QR Code & Neon Glow ----- */
+        .bank-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%; /* Cắt viền tròn */
+            background-color: #ffffff;
+            padding: 8px;
+            object-fit: contain;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            display: none; /* Ẩn đi chờ dữ liệu */
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* ----- QR Code ----- */
         .qr-wrapper {
             background: #ffffff;
             padding: 12px;
-            border-radius: 12px;
+            border-radius: 20px;
             margin-bottom: 30px;
             width: 220px;
             height: 220px;
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Phát sáng Neon Cyan */
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.5),
-                        0 0 40px rgba(0, 210, 255, 0.2);
-            position: relative;
-        }
-
-        .qr-wrapper::after {
-            content: '';
-            position: absolute;
-            top: -5px; left: -5px; right: -5px; bottom: -5px;
-            border: 1px solid rgba(0, 210, 255, 0.5);
-            border-radius: 15px;
-            z-index: -1;
-            animation: pulseGlow 2s infinite alternate;
-        }
-
-        @keyframes pulseGlow {
-            from { opacity: 0.5; transform: scale(1); }
-            to { opacity: 1; transform: scale(1.03); }
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
 
         .qr-image {
             width: 100%;
             height: 100%;
-            border-radius: 8px;
+            border-radius: 10px;
             object-fit: cover;
         }
 
@@ -120,25 +96,17 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
 
         .info-item {
-            background: #0d1624;
-            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 14px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(0, 210, 255, 0.1);
-            border-left: 4px solid #00d2ff; /* Viền nhấn mạnh bên trái */
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .info-item:hover {
-            background: #111d2e;
-            box-shadow: inset 50px 0 50px -50px rgba(0, 210, 255, 0.3);
-            border-color: rgba(0, 210, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .info-text {
@@ -148,165 +116,114 @@
         }
 
         .info-label {
-            color: #00d2ff;
-            font-size: 13px;
-            font-weight: 600;
+            color: #9ca3af;
+            font-size: 12px;
+            font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.8;
-        }
-
-        .info-value-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .bank-logo {
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            background-color: white;
-            padding: 2px;
-            object-fit: contain;
-            display: none;
+            letter-spacing: 0.5px;
         }
 
         .info-value {
             color: #ffffff;
-            font-family: 'Share Tech Mono', monospace; /* Font kiểu hacker cho số */
-            font-size: 17px;
-            letter-spacing: 0.5px;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+            font-size: 15px;
+            letter-spacing: 0.3px;
         }
 
+        /* Nút copy tối giản, KHÔNG hiệu ứng */
         .btn-copy {
-            background: rgba(0, 210, 255, 0.1);
-            border: 1px solid rgba(0, 210, 255, 0.3);
-            color: #00d2ff;
+            background: transparent;
+            border: none;
+            color: #6b7280;
             cursor: pointer;
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             display: flex;
             justify-content: center;
             align-items: center;
-            border-radius: 6px;
-            transition: all 0.2s ease;
         }
 
-        .btn-copy:hover {
-            background: #00d2ff;
-            color: #050a10;
-            box-shadow: 0 0 10px #00d2ff;
-        }
-
-        /* Copy Success state */
-        .btn-copy.success {
-            background: #00ffaa;
-            border-color: #00ffaa;
-            color: #050a10;
-            box-shadow: 0 0 15px rgba(0, 255, 170, 0.5);
-        }
-
-        /* ----- 2 Nút Hành Động (Đã chuyển xuống dưới) ----- */
+        /* ----- Nút Hành Động Ở Dưới Cùng ----- */
         .action-buttons {
             display: flex;
             justify-content: space-between;
             width: 100%;
-            margin-top: 25px; /* Khoảng cách với phần thông tin */
-            gap: 15px;
+            margin-top: 24px;
+            gap: 12px;
         }
 
-        .btn-cyber {
+        .btn-action {
             flex: 1;
-            background: rgba(0, 210, 255, 0.05);
-            border: 1px solid #00d2ff;
-            color: #00d2ff;
-            border-radius: 6px;
-            padding: 12px 0;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-radius: 14px;
+            padding: 14px 0;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
             cursor: pointer;
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 700;
-            font-size: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            box-shadow: inset 0 0 10px rgba(0, 210, 255, 0.1);
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s;
         }
 
-        .btn-cyber:hover {
-            background: #00d2ff;
-            color: #050a10;
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.6), inset 0 0 10px rgba(0, 210, 255, 0.3);
-            text-shadow: none;
+        .btn-action:active {
+            background: rgba(255, 255, 255, 0.15);
         }
 
-        /* Hiệu ứng tia sáng chạy ngang nút */
-        .btn-cyber::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transform: skewX(-20deg);
-            transition: 0.5s;
-        }
-        .btn-cyber:hover::before {
-            left: 150%;
+        .btn-action svg {
+            width: 18px;
+            height: 18px;
         }
 
-        .btn-cyber svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        /* ----- Trạng thái Loading / Lỗi ----- */
+        /* ----- Loading & Error ----- */
         #loading {
             text-align: center;
             padding: 40px;
-            color: #00d2ff;
-            font-size: 18px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
-            animation: blink 1s infinite;
+            color: #9ca3af;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
         }
-
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        
+        .spinner {
+            width: 24px; height: 24px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         #error {
             text-align: center;
             padding: 20px;
-            color: #ff003c;
-            font-weight: 700;
+            color: #ef4444;
+            font-weight: 500;
             display: none;
-            border: 1px solid #ff003c;
-            background: rgba(255, 0, 60, 0.1);
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(255, 0, 60, 0.3);
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            font-size: 14px;
         }
 
         #content-wrapper { display: none; }
 
-        svg {
-            fill: currentColor;
-            transition: transform 0.2s;
-        }
+        svg { fill: currentColor; }
 
-        /* ---------------- Modal Hướng Dẫn (Cyberpunk Style) ---------------- */
+        /* ---------------- Modal Hướng Dẫn ---------------- */
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(2, 6, 12, 0.85);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
             z-index: 999;
             justify-content: center;
             align-items: center;
@@ -315,16 +232,15 @@
         }
 
         .modal-content {
-            background: #09101a;
-            border: 1px solid #00d2ff;
-            border-radius: 12px;
+            background: #18181b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
             padding: 30px 25px;
             width: 90%;
             max-width: 360px;
-            box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
             position: relative;
-            transform: scale(0.9);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .modal-overlay.active {
@@ -338,87 +254,72 @@
 
         .close-btn {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            color: #00d2ff;
-            font-size: 24px;
+            top: 20px;
+            right: 20px;
+            color: #9ca3af;
             cursor: pointer;
-            transition: all 0.2s;
-            width: 30px; height: 30px;
+            width: 24px; height: 24px;
             display: flex; justify-content: center; align-items: center;
-            border: 1px solid transparent;
-        }
-
-        .close-btn:hover { 
-            color: #ff003c; 
-            border: 1px solid #ff003c;
-            border-radius: 4px;
-            box-shadow: 0 0 10px rgba(255, 0, 60, 0.4);
         }
 
         .modal-title {
-            color: #00d2ff;
-            font-size: 20px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 25px;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
             text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            text-shadow: 0 0 8px rgba(0, 210, 255, 0.5);
         }
 
         .guide-steps { list-style: none; }
 
         .guide-steps li {
-            background: rgba(0, 210, 255, 0.03);
-            border-radius: 6px;
-            padding: 12px 15px;
-            margin-bottom: 12px;
-            font-size: 14.5px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            font-size: 13.5px;
             line-height: 1.5;
-            color: #a3c2d1;
+            color: #d1d5db;
             display: flex;
             align-items: flex-start;
             gap: 12px;
-            border: 1px solid rgba(0, 210, 255, 0.1);
         }
 
         .guide-steps li .step-num {
-            background: #00d2ff;
-            color: #050a10;
-            min-width: 24px;
-            height: 24px;
-            border-radius: 4px;
+            background: #ffffff;
+            color: #000000;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 13px;
-            font-family: 'Share Tech Mono', monospace;
-            box-shadow: 0 0 8px rgba(0, 210, 255, 0.5);
+            font-size: 11px;
+            margin-top: 2px;
         }
         
-        .guide-steps strong { color: #ffffff; }
+        .guide-steps strong { color: #ffffff; font-weight: 600; }
     </style>
 </head>
 <body>
 
     <div class="main-container">
         
-        <!-- Màn hình Loading phong cách System Boot -->
         <div id="loading">
-            <div>> SYSTEM.BOOT()</div>
-            <div style="font-size: 12px; margin-top: 10px; opacity: 0.7;">[CONNECTING TO SERVER...]</div>
+            <div class="spinner"></div>
+            Đang tải dữ liệu...
         </div>
         
         <div id="error"></div>
 
         <div id="content-wrapper">
             <div class="payment-card">
+                
+                <!-- Logo cắt viền đưa lên ĐẦU TRANG -->
+                <div class="top-logo-container">
+                    <img id="bank-logo" class="bank-logo" src="" alt="Bank Logo">
+                </div>
                 
                 <!-- Khu vực Mã QR -->
                 <div class="qr-wrapper">
@@ -431,12 +332,9 @@
                     <div class="info-item">
                         <div class="info-text">
                             <span class="info-label">Ngân hàng</span>
-                            <div class="info-value-wrapper">
-                                <img id="bank-logo" class="bank-logo" src="" alt="Logo">
-                                <span class="info-value" id="bank-name">---</span>
-                            </div>
+                            <span class="info-value" id="bank-name">---</span>
                         </div>
-                        <button class="btn-copy" onclick="copyText('bank-name', this)">
+                        <button class="btn-copy" onclick="copyText('bank-name')">
                             <svg viewBox="0 0 24 24" width="20" height="20"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
                         </button>
                     </div>
@@ -445,11 +343,9 @@
                     <div class="info-item">
                         <div class="info-text">
                             <span class="info-label">Số tài khoản</span>
-                            <div class="info-value-wrapper">
-                                <span class="info-value" id="acc-number">---</span>
-                            </div>
+                            <span class="info-value" id="acc-number">---</span>
                         </div>
-                        <button class="btn-copy" onclick="copyText('acc-number', this)">
+                        <button class="btn-copy" onclick="copyText('acc-number')">
                             <svg viewBox="0 0 24 24" width="20" height="20"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
                         </button>
                     </div>
@@ -458,26 +354,24 @@
                     <div class="info-item">
                         <div class="info-text">
                             <span class="info-label">Chủ tài khoản</span>
-                            <div class="info-value-wrapper">
-                                <span class="info-value" id="acc-owner">---</span>
-                            </div>
+                            <span class="info-value" id="acc-owner">---</span>
                         </div>
-                        <button class="btn-copy" onclick="copyText('acc-owner', this)">
+                        <button class="btn-copy" onclick="copyText('acc-owner')">
                             <svg viewBox="0 0 24 24" width="20" height="20"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
                         </button>
                     </div>
                 </div>
 
-                <!-- Nút Hành Động (Đã chuyển xuống dưới Info) -->
+                <!-- Nút Hành Động Ở PHÍA DƯỚI -->
                 <div class="action-buttons">
-                    <div class="btn-cyber" onclick="downloadQR()" title="Tải mã QR">
+                    <div class="btn-action" onclick="downloadQR()">
                         <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-                        <span>Lưu QR</span>
+                        Lưu Mã
                     </div>
                     
-                    <div class="btn-cyber" onclick="openModal()" title="Hướng dẫn thanh toán">
+                    <div class="btn-action" onclick="openModal()">
                         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
-                        <span>Hướng Dẫn</span>
+                        Hướng Dẫn
                     </div>
                 </div>
 
@@ -491,18 +385,15 @@
             <span class="close-btn" onclick="closeModal()">
                 <svg viewBox="0 0 24 24" width="24" height="24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </span>
-            <h3 class="modal-title">
-                <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
-                SYSTEM_GUIDE
-            </h3>
+            <h3 class="modal-title">Hướng Dẫn Quét Mã</h3>
             <ul class="guide-steps">
                 <li>
                     <div class="step-num">1</div>
-                    <div>Bấm <strong>Lưu QR</strong> (hoặc chụp màn hình) để lưu ảnh.</div>
+                    <div>Bấm <strong>Lưu Mã</strong> (hoặc chụp màn hình) để lưu ảnh.</div>
                 </li>
                 <li>
                     <div class="step-num">2</div>
-                    <div>Truy cập ứng dụng <strong>Banking</strong> hoặc Ví điện tử.</div>
+                    <div>Truy cập ứng dụng <strong>Ngân hàng</strong> hoặc Ví điện tử.</div>
                 </li>
                 <li>
                     <div class="step-num">3</div>
@@ -551,23 +442,21 @@
                     document.getElementById('acc-number').innerText = data.accNumber;
                     document.getElementById('acc-owner').innerText = data.accOwner;
                     
+                    // Logo cắt viền ở đầu trang
                     if(data.logo) {
                         const logoImg = document.getElementById('bank-logo');
                         logoImg.src = data.logo;
                         logoImg.style.display = 'block';
                     }
 
-                    // Độ trễ giả lập System Boot cho ngầu
-                    setTimeout(() => {
-                        document.getElementById('loading').style.display = 'none';
-                        document.getElementById('content-wrapper').style.display = 'block';
-                    }, 600);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('content-wrapper').style.display = 'block';
 
                 } else {
-                    showError("[ERROR] RECORD_NOT_FOUND");
+                    showError("Không tìm thấy thông tin giao dịch.");
                 }
             } catch (error) {
-                showError("[ERROR] CONNECTION_FAILED");
+                showError("Lỗi kết nối máy chủ. Vui lòng thử lại sau.");
             }
         }
 
@@ -578,19 +467,11 @@
             errEl.innerText = msg;
         }
 
-        // Copy - Chuyển sang xanh lá Neon
-        function copyText(elementId, btnElement) {
+        // Copy hoàn toàn BỎ HIỆU ỨNG đổi icon/màu
+        function copyText(elementId) {
             const text = document.getElementById(elementId).innerText;
             navigator.clipboard.writeText(text).then(() => {
-                const originalHTML = btnElement.innerHTML;
-                
-                btnElement.classList.add('success');
-                btnElement.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
-
-                setTimeout(() => {
-                    btnElement.innerHTML = originalHTML;
-                    btnElement.classList.remove('success');
-                }, 1500);
+                alert("Đã sao chép: " + text); // Hiện thông báo nhỏ mặc định của hệ thống
             }).catch(err => {
                 console.error('Copy Error: ', err);
             });
@@ -610,7 +491,7 @@
                 a.click();
                 window.URL.revokeObjectURL(url);
             } catch (err) {
-                alert("[SYSTEM WARNING] Lỗi tải ảnh. Hãy dùng tính năng chụp màn hình.");
+                alert("Lỗi tải ảnh. Hãy dùng tính năng chụp màn hình.");
             }
         }
 
