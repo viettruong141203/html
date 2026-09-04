@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cổng Thanh Toán Cao Cấp</title>
+    <title>Cyberpunk Payment Gateway</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap');
 
         * {
             box-sizing: border-box;
@@ -14,208 +14,131 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #030712;
+            /* Font chữ đậm chất công nghệ */
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #050a10;
+            /* Nền lưới Grid Cyberpunk */
+            background-image: 
+                linear-gradient(rgba(0, 210, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 210, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center center;
             color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            overflow: hidden;
             position: relative;
         }
 
-        /* ----- Hiệu ứng nền Aurora (Cực quang) ----- */
-        .aurora-bg {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            overflow: hidden;
-            z-index: -1;
-            background: #030712;
-        }
-
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.6;
-            animation: float 10s infinite ease-in-out alternate;
-        }
-
-        .orb-1 {
-            background: #4f46e5; /* Indigo */
-            width: 400px; height: 400px;
-            top: -100px; left: -100px;
-            animation-delay: 0s;
-        }
-
-        .orb-2 {
-            background: #9333ea; /* Purple */
-            width: 350px; height: 350px;
-            bottom: -50px; right: -50px;
-            animation-delay: -3s;
-        }
-
-        .orb-3 {
-            background: #0ea5e9; /* Sky blue */
-            width: 300px; height: 300px;
-            top: 40%; left: 50%;
-            transform: translate(-50%, -50%);
-            animation-delay: -6s;
-        }
-
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(30px, -50px) scale(1.2); }
-        }
-
-        /* ----- Container & Card ----- */
         .main-container {
             width: 100%;
-            max-width: 400px;
-            position: relative;
+            max-width: 420px;
             z-index: 10;
         }
 
+        /* ----- Thẻ Thông Tin Chính ----- */
         .payment-card {
-            background: rgba(17, 24, 39, 0.4);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-radius: 32px;
+            background: #09101a;
+            border-radius: 16px;
             padding: 35px 25px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
-            /* Viền sáng 3D */
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-            border-left: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8), 
+                        inset 0 0 0 1px rgba(0, 210, 255, 0.2);
+            position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
-            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: glitchFade 0.8s ease-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+        /* Góc trang trí kiểu vi mạch */
+        .payment-card::before, .payment-card::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #00d2ff;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .payment-card::before {
+            top: -2px; left: -2px;
+            border-right: transparent; border-bottom: transparent;
+        }
+        .payment-card::after {
+            bottom: -2px; right: -2px;
+            border-left: transparent; border-top: transparent;
         }
 
-        /* ----- Khung QR Code ----- */
-        .qr-frame {
-            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 100%);
-            padding: 2px; /* Độ mỏng của viền gradient */
-            border-radius: 26px;
-            margin-bottom: 25px;
-            box-shadow: 0 0 30px rgba(79, 70, 229, 0.3);
-            animation: glowPulse 3s infinite alternate;
+        @keyframes glitchFade {
+            from { opacity: 0; transform: translateY(20px); filter: brightness(2); }
+            to { opacity: 1; transform: translateY(0); filter: brightness(1); }
         }
 
-        @keyframes glowPulse {
-            0% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.3); }
-            100% { box-shadow: 0 0 40px rgba(147, 51, 234, 0.5); }
-        }
-
-        .qr-inner {
+        /* ----- QR Code & Neon Glow ----- */
+        .qr-wrapper {
             background: #ffffff;
             padding: 12px;
-            border-radius: 24px;
-            width: 240px;
-            height: 240px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            width: 220px;
+            height: 220px;
             display: flex;
             justify-content: center;
             align-items: center;
+            /* Phát sáng Neon Cyan */
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.5),
+                        0 0 40px rgba(0, 210, 255, 0.2);
+            position: relative;
+        }
+
+        .qr-wrapper::after {
+            content: '';
+            position: absolute;
+            top: -5px; left: -5px; right: -5px; bottom: -5px;
+            border: 1px solid rgba(0, 210, 255, 0.5);
+            border-radius: 15px;
+            z-index: -1;
+            animation: pulseGlow 2s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            from { opacity: 0.5; transform: scale(1); }
+            to { opacity: 1; transform: scale(1.03); }
         }
 
         .qr-image {
             width: 100%;
             height: 100%;
-            border-radius: 14px;
+            border-radius: 8px;
             object-fit: cover;
         }
 
-        /* ----- Nút Hành Động ----- */
-        .action-buttons {
-            display: flex;
-            justify-content: space-between;
-            width: 240px;
-            margin-bottom: 30px;
-            gap: 12px;
-        }
-
-        .btn-icon {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            color: #cbd5e1;
-            padding: 12px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
-        }
-
-        .btn-icon:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-icon span {
-            font-size: 11px;
-            font-weight: 600;
-            margin-top: 8px;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-icon svg {
-            width: 24px;
-            height: 24px;
-        }
-
-        /* Hiệu ứng màu gradient riêng cho icon nút Hover */
-        .btn-icon:first-child:hover svg { color: #38bdf8; }
-        .btn-icon:last-child:hover svg { color: #a855f7; }
-
-        /* ----- Thông tin chuyển khoản ----- */
+        /* ----- Danh Sách Thông Tin ----- */
         .info-list {
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 15px;
         }
 
         .info-item {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 18px;
-            padding: 14px 18px;
+            background: #0d1624;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 210, 255, 0.1);
+            border-left: 4px solid #00d2ff; /* Viền nhấn mạnh bên trái */
+            border-radius: 8px;
             transition: all 0.3s ease;
-            opacity: 0;
-            transform: translateY(15px);
-            animation: slideUp 0.6s forwards;
-        }
-
-        .info-item:nth-child(1) { animation-delay: 0.1s; }
-        .info-item:nth-child(2) { animation-delay: 0.2s; }
-        .info-item:nth-child(3) { animation-delay: 0.3s; }
-
-        @keyframes slideUp {
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .info-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.1);
+            background: #111d2e;
+            box-shadow: inset 50px 0 50px -50px rgba(0, 210, 255, 0.3);
+            border-color: rgba(0, 210, 255, 0.4);
         }
 
         .info-text {
@@ -225,11 +148,12 @@
         }
 
         .info-label {
-            color: #94a3b8;
-            font-size: 12px;
-            font-weight: 500;
+            color: #00d2ff;
+            font-size: 13px;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            opacity: 0.8;
         }
 
         .info-value-wrapper {
@@ -239,9 +163,9 @@
         }
 
         .bank-logo {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
             background-color: white;
             padding: 2px;
             object-fit: contain;
@@ -250,103 +174,157 @@
 
         .info-value {
             color: #ffffff;
-            font-weight: 700;
-            font-size: 15px;
+            font-family: 'Share Tech Mono', monospace; /* Font kiểu hacker cho số */
+            font-size: 17px;
             letter-spacing: 0.5px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
         }
 
         .btn-copy {
-            background: transparent;
-            border: none;
-            color: #64748b;
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            color: #00d2ff;
             cursor: pointer;
             width: 36px;
             height: 36px;
             display: flex;
             justify-content: center;
             align-items: center;
-            border-radius: 10px;
+            border-radius: 6px;
             transition: all 0.2s ease;
         }
 
         .btn-copy:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
+            background: #00d2ff;
+            color: #050a10;
+            box-shadow: 0 0 10px #00d2ff;
         }
 
-        /* Nút copy khi thành công */
+        /* Copy Success state */
         .btn-copy.success {
-            background: rgba(34, 197, 94, 0.2);
-            color: #22c55e;
+            background: #00ffaa;
+            border-color: #00ffaa;
+            color: #050a10;
+            box-shadow: 0 0 15px rgba(0, 255, 170, 0.5);
         }
 
+        /* ----- 2 Nút Hành Động (Đã chuyển xuống dưới) ----- */
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 25px; /* Khoảng cách với phần thông tin */
+            gap: 15px;
+        }
+
+        .btn-cyber {
+            flex: 1;
+            background: rgba(0, 210, 255, 0.05);
+            border: 1px solid #00d2ff;
+            color: #00d2ff;
+            border-radius: 6px;
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0, 210, 255, 0.1);
+        }
+
+        .btn-cyber:hover {
+            background: #00d2ff;
+            color: #050a10;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.6), inset 0 0 10px rgba(0, 210, 255, 0.3);
+            text-shadow: none;
+        }
+
+        /* Hiệu ứng tia sáng chạy ngang nút */
+        .btn-cyber::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transform: skewX(-20deg);
+            transition: 0.5s;
+        }
+        .btn-cyber:hover::before {
+            left: 150%;
+        }
+
+        .btn-cyber svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* ----- Trạng thái Loading / Lỗi ----- */
         #loading {
             text-align: center;
             padding: 40px;
-            color: #e2e8f0;
-            font-size: 16px;
-            font-weight: 500;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
+            color: #00d2ff;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+            animation: blink 1s infinite;
         }
-        
-        /* Spinner mượt mà */
-        .spinner {
-            width: 30px; height: 30px;
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top-color: #a855f7;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
         #error {
             text-align: center;
             padding: 20px;
-            color: #f87171;
-            font-weight: 500;
+            color: #ff003c;
+            font-weight: 700;
             display: none;
-            background: rgba(239, 68, 68, 0.1);
-            border-radius: 16px;
-            border: 1px solid rgba(239, 68, 68, 0.2);
+            border: 1px solid #ff003c;
+            background: rgba(255, 0, 60, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(255, 0, 60, 0.3);
         }
 
         #content-wrapper { display: none; }
 
         svg {
-            width: 20px;
-            height: 20px;
             fill: currentColor;
             transition: transform 0.2s;
         }
 
-        /* ---------------- Modal Hướng Dẫn ---------------- */
+        /* ---------------- Modal Hướng Dẫn (Cyberpunk Style) ---------------- */
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(3, 7, 18, 0.6);
-            backdrop-filter: blur(10px);
+            background: rgba(2, 6, 12, 0.85);
+            backdrop-filter: blur(5px);
             z-index: 999;
             justify-content: center;
             align-items: center;
             opacity: 0;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.3s ease;
         }
 
         .modal-content {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 32px;
+            background: #09101a;
+            border: 1px solid #00d2ff;
+            border-radius: 12px;
             padding: 30px 25px;
             width: 90%;
             max-width: 360px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
             position: relative;
-            transform: scale(0.95) translateY(20px);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: scale(0.9);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .modal-overlay.active {
@@ -355,86 +333,86 @@
         }
 
         .modal-overlay.active .modal-content {
-            transform: scale(1) translateY(0);
+            transform: scale(1);
         }
 
         .close-btn {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            color: #64748b;
+            top: 15px;
+            right: 15px;
+            color: #00d2ff;
             font-size: 24px;
-            width: 32px; height: 32px;
-            display: flex; justify-content: center; align-items: center;
-            border-radius: 50%;
             cursor: pointer;
             transition: all 0.2s;
-            background: rgba(255,255,255,0.05);
+            width: 30px; height: 30px;
+            display: flex; justify-content: center; align-items: center;
+            border: 1px solid transparent;
         }
 
-        .close-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .close-btn:hover { 
+            color: #ff003c; 
+            border: 1px solid #ff003c;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(255, 0, 60, 0.4);
+        }
 
         .modal-title {
-            color: #ffffff;
-            font-size: 18px;
-            font-weight: 600;
+            color: #00d2ff;
+            font-size: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             margin-bottom: 25px;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.5);
         }
-        
-        .modal-title svg { color: #a855f7; }
 
         .guide-steps { list-style: none; }
 
         .guide-steps li {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 16px;
-            padding: 14px 16px;
+            background: rgba(0, 210, 255, 0.03);
+            border-radius: 6px;
+            padding: 12px 15px;
             margin-bottom: 12px;
-            font-size: 13.5px;
+            font-size: 14.5px;
             line-height: 1.5;
-            color: #cbd5e1;
+            color: #a3c2d1;
             display: flex;
             align-items: flex-start;
-            gap: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            gap: 12px;
+            border: 1px solid rgba(0, 210, 255, 0.1);
         }
 
         .guide-steps li .step-num {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            color: #ffffff;
-            min-width: 26px;
-            height: 26px;
-            border-radius: 50%;
+            background: #00d2ff;
+            color: #050a10;
+            min-width: 24px;
+            height: 24px;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 12px;
-            box-shadow: 0 4px 10px rgba(168, 85, 247, 0.4);
+            font-size: 13px;
+            font-family: 'Share Tech Mono', monospace;
+            box-shadow: 0 0 8px rgba(0, 210, 255, 0.5);
         }
         
-        .guide-steps strong { color: #ffffff; font-weight: 600; }
+        .guide-steps strong { color: #ffffff; }
     </style>
 </head>
 <body>
 
-    <!-- Nền Cực quang chuyển động -->
-    <div class="aurora-bg">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-    </div>
-
     <div class="main-container">
-        <!-- Khung Loading mượt mà -->
+        
+        <!-- Màn hình Loading phong cách System Boot -->
         <div id="loading">
-            <div class="spinner"></div>
-            Đang khởi tạo kết nối...
+            <div>> SYSTEM.BOOT()</div>
+            <div style="font-size: 12px; margin-top: 10px; opacity: 0.7;">[CONNECTING TO SERVER...]</div>
         </div>
         
         <div id="error"></div>
@@ -442,26 +420,12 @@
         <div id="content-wrapper">
             <div class="payment-card">
                 
-                <!-- Viền QR phát sáng Gradient -->
-                <div class="qr-frame">
-                    <div class="qr-inner">
-                        <img id="qr-image" class="qr-image" src="" alt="Mã QR">
-                    </div>
+                <!-- Khu vực Mã QR -->
+                <div class="qr-wrapper">
+                    <img id="qr-image" class="qr-image" src="" alt="Mã QR">
                 </div>
 
-                <!-- 2 Nút Hành động bằng Icon kiểu Apple/Fintech -->
-                <div class="action-buttons">
-                    <div class="btn-icon" onclick="downloadQR()" title="Tải mã QR">
-                        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-                        <span>Lưu Mã</span>
-                    </div>
-                    
-                    <div class="btn-icon" onclick="openModal()" title="Hướng dẫn thanh toán">
-                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
-                        <span>Hướng Dẫn</span>
-                    </div>
-                </div>
-
+                <!-- Danh sách Thông tin -->
                 <div class="info-list">
                     <!-- Ngân hàng -->
                     <div class="info-item">
@@ -473,7 +437,7 @@
                             </div>
                         </div>
                         <button class="btn-copy" onclick="copyText('bank-name', this)">
-                            <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
                         </button>
                     </div>
 
@@ -486,7 +450,7 @@
                             </div>
                         </div>
                         <button class="btn-copy" onclick="copyText('acc-number', this)">
-                            <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
                         </button>
                     </div>
 
@@ -499,42 +463,58 @@
                             </div>
                         </div>
                         <button class="btn-copy" onclick="copyText('acc-owner', this)">
-                            <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
                         </button>
                     </div>
                 </div>
+
+                <!-- Nút Hành Động (Đã chuyển xuống dưới Info) -->
+                <div class="action-buttons">
+                    <div class="btn-cyber" onclick="downloadQR()" title="Tải mã QR">
+                        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                        <span>Lưu QR</span>
+                    </div>
+                    
+                    <div class="btn-cyber" onclick="openModal()" title="Hướng dẫn thanh toán">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+                        <span>Hướng Dẫn</span>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 
-    <!-- Modal Hướng Dẫn Quét Mã Cao Cấp -->
+    <!-- Modal Hướng Dẫn -->
     <div id="guideModal" class="modal-overlay">
         <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <span class="close-btn" onclick="closeModal()">
+                <svg viewBox="0 0 24 24" width="24" height="24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </span>
             <h3 class="modal-title">
-                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
-                Hướng Dẫn Quét Mã
+                <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+                SYSTEM_GUIDE
             </h3>
             <ul class="guide-steps">
                 <li>
                     <div class="step-num">1</div>
-                    <div>Bấm <strong>Lưu Mã</strong> (hoặc chụp màn hình) để lưu ảnh QR vào thư viện.</div>
+                    <div>Bấm <strong>Lưu QR</strong> (hoặc chụp màn hình) để lưu ảnh.</div>
                 </li>
                 <li>
                     <div class="step-num">2</div>
-                    <div>Mở ứng dụng <strong>Ngân hàng</strong> (Banking) hoặc Ví điện tử của bạn.</div>
+                    <div>Truy cập ứng dụng <strong>Banking</strong> hoặc Ví điện tử.</div>
                 </li>
                 <li>
                     <div class="step-num">3</div>
-                    <div>Chọn chức năng <strong>Quét mã QR</strong> trên màn hình chính.</div>
+                    <div>Mở tính năng <strong>Quét mã QR</strong>.</div>
                 </li>
                 <li>
                     <div class="step-num">4</div>
-                    <div>Chọn tải ảnh từ <strong>Thư viện</strong> và chọn bức ảnh mã QR vừa lưu.</div>
+                    <div>Chọn <strong>Tải ảnh lên</strong> từ thư viện và chọn ảnh vừa lưu.</div>
                 </li>
                 <li>
                     <div class="step-num">5</div>
-                    <div>Kiểm tra đối chiếu thông tin chủ tài khoản và xác nhận.</div>
+                    <div>Xác nhận thông tin và hoàn tất thanh toán.</div>
                 </li>
             </ul>
         </div>
@@ -577,13 +557,17 @@
                         logoImg.style.display = 'block';
                     }
 
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('content-wrapper').style.display = 'block';
+                    // Độ trễ giả lập System Boot cho ngầu
+                    setTimeout(() => {
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('content-wrapper').style.display = 'block';
+                    }, 600);
+
                 } else {
-                    showError("❌ Không tìm thấy thông tin giao dịch!");
+                    showError("[ERROR] RECORD_NOT_FOUND");
                 }
             } catch (error) {
-                showError("❌ Lỗi kết nối máy chủ. Vui lòng thử lại sau.");
+                showError("[ERROR] CONNECTION_FAILED");
             }
         }
 
@@ -594,22 +578,21 @@
             errEl.innerText = msg;
         }
 
-        // Copy tinh tế: Đổi icon và màu nền thành xanh lá
+        // Copy - Chuyển sang xanh lá Neon
         function copyText(elementId, btnElement) {
             const text = document.getElementById(elementId).innerText;
             navigator.clipboard.writeText(text).then(() => {
                 const originalHTML = btnElement.innerHTML;
                 
-                // Thêm class success để CSS xử lý màu xanh lá
                 btnElement.classList.add('success');
-                btnElement.innerHTML = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+                btnElement.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
 
                 setTimeout(() => {
                     btnElement.innerHTML = originalHTML;
                     btnElement.classList.remove('success');
                 }, 1500);
             }).catch(err => {
-                console.error('Lỗi khi sao chép: ', err);
+                console.error('Copy Error: ', err);
             });
         }
 
@@ -627,7 +610,7 @@
                 a.click();
                 window.URL.revokeObjectURL(url);
             } catch (err) {
-                alert("Không thể tải ảnh tự động, vui lòng dùng tính năng chụp màn hình!");
+                alert("[SYSTEM WARNING] Lỗi tải ảnh. Hãy dùng tính năng chụp màn hình.");
             }
         }
 
