@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cổng Thanh Toán Cao Cấp</title>
+    <title id="page-title">Cổng Thanh Toán</title>
+    <!-- Thẻ Favicon mặc định, sẽ được thay đổi bằng JS -->
+    <link id="favicon" rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -38,7 +41,7 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 28px;
-            padding: 30px 20px;
+            padding: 35px 20px 30px 20px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
@@ -54,20 +57,21 @@
 
         /* ----- Logo Phóng to & Cắt nền ----- */
         .top-logo-container {
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             display: flex;
             justify-content: center;
             align-items: center;
+            width: 100%;
         }
 
         .bank-logo {
-            width: 140px; /* Phóng to logo */
+            width: auto;
+            max-width: 220px; /* Đã phóng to đáng kể */
             height: auto;
-            max-height: 70px; /* Giới hạn chiều cao để cân đối */
+            max-height: 85px; 
             object-fit: contain;
-            display: none; /* Ẩn đi chờ dữ liệu */
-            /* Dùng drop-shadow thay vì box-shadow để đổ bóng bao sát hình dáng thật của logo (nền trong suốt) */
-            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.6));
+            display: none; /* Ẩn chờ load data */
+            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.6)); /* Đổ bóng tạo chiều sâu */
         }
 
         /* ----- QR Code ----- */
@@ -76,8 +80,8 @@
             padding: 12px;
             border-radius: 20px;
             margin-bottom: 30px;
-            width: 220px;
-            height: 220px;
+            width: 230px;
+            height: 230px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -130,7 +134,7 @@
             letter-spacing: 0.3px;
         }
 
-        /* Nút copy tĩnh (Không hiệu ứng hover) */
+        /* Nút copy hoàn toàn tĩnh */
         .btn-copy {
             background: transparent;
             border: none;
@@ -143,7 +147,7 @@
             align-items: center;
         }
 
-        /* ----- Nút Hành Động Ở Dưới Cùng ----- */
+        /* ----- Nút Hành Động ----- */
         .action-buttons {
             display: flex;
             justify-content: space-between;
@@ -300,6 +304,31 @@
         }
         
         .guide-steps strong { color: #ffffff; font-weight: 600; }
+
+        /* ---------------- Toast Notification Nhỏ Gọn (Thay cho alert) ---------------- */
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(50px);
+            background: rgba(255, 255, 255, 0.95);
+            color: #000000;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
     </style>
 </head>
 <body>
@@ -316,7 +345,7 @@
         <div id="content-wrapper">
             <div class="payment-card">
                 
-                <!-- Logo Phóng To & Cắt Nền -->
+                <!-- Logo Phóng To -->
                 <div class="top-logo-container">
                     <img id="bank-logo" class="bank-logo" src="" alt="Bank Logo">
                 </div>
@@ -411,6 +440,9 @@
         </div>
     </div>
 
+    <!-- Thông báo ẩn (Toast) -->
+    <div id="toast" class="toast">Đã sao chép!</div>
+
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const transactionId = urlParams.get('id') || 'BK926295'; 
@@ -435,6 +467,9 @@
                 if (result.success && result.data) {
                     const data = result.data;
                     
+                    // 1. Cập nhật Tên Web (Title) theo tên ngân hàng
+                    document.getElementById('page-title').innerText = data.bankName + " - Thanh toán";
+
                     currentQRUrl = `https://img.vietqr.io/image/${data.bin}-${data.accNumber}-qr_only.png`;
 
                     document.getElementById('qr-image').src = currentQRUrl;
@@ -446,6 +481,9 @@
                         const logoImg = document.getElementById('bank-logo');
                         logoImg.src = data.logo;
                         logoImg.style.display = 'block';
+
+                        // 2. Cập nhật Icon Web (Favicon) theo logo ngân hàng
+                        document.getElementById('favicon').href = data.logo;
                     }
 
                     document.getElementById('loading').style.display = 'none';
@@ -466,10 +504,24 @@
             errEl.innerText = msg;
         }
 
+        // Hàm gọi thông báo Toast
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000); // Biến mất sau 2 giây
+        }
+
+        // Bỏ alert(), thay bằng showToast()
         function copyText(elementId) {
             const text = document.getElementById(elementId).innerText;
             navigator.clipboard.writeText(text).then(() => {
-                alert("Đã sao chép: " + text); 
+                showToast("Đã sao chép thành công"); 
             }).catch(err => {
                 console.error('Copy Error: ', err);
             });
@@ -489,7 +541,7 @@
                 a.click();
                 window.URL.revokeObjectURL(url);
             } catch (err) {
-                alert("Lỗi tải ảnh. Hãy dùng tính năng chụp màn hình.");
+                showToast("Vui lòng chụp màn hình để lưu QR");
             }
         }
 
