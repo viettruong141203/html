@@ -16,7 +16,6 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #000000;
-            /* Nền gradient tối sang trọng */
             background-image: radial-gradient(circle at 50% 0%, #1f2937 0%, #000000 70%);
             background-attachment: fixed;
             color: #ffffff;
@@ -53,21 +52,22 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ----- Logo Cắt Viền Đầu Trang ----- */
+        /* ----- Logo Phóng to & Cắt nền ----- */
         .top-logo-container {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .bank-logo {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%; /* Cắt viền tròn */
-            background-color: #ffffff;
-            padding: 8px;
+            width: 140px; /* Phóng to logo */
+            height: auto;
+            max-height: 70px; /* Giới hạn chiều cao để cân đối */
             object-fit: contain;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
             display: none; /* Ẩn đi chờ dữ liệu */
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            /* Dùng drop-shadow thay vì box-shadow để đổ bóng bao sát hình dáng thật của logo (nền trong suốt) */
+            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.6));
         }
 
         /* ----- QR Code ----- */
@@ -130,7 +130,7 @@
             letter-spacing: 0.3px;
         }
 
-        /* Nút copy tối giản, KHÔNG hiệu ứng */
+        /* Nút copy tĩnh (Không hiệu ứng hover) */
         .btn-copy {
             background: transparent;
             border: none;
@@ -316,7 +316,7 @@
         <div id="content-wrapper">
             <div class="payment-card">
                 
-                <!-- Logo cắt viền đưa lên ĐẦU TRANG -->
+                <!-- Logo Phóng To & Cắt Nền -->
                 <div class="top-logo-container">
                     <img id="bank-logo" class="bank-logo" src="" alt="Bank Logo">
                 </div>
@@ -362,7 +362,7 @@
                     </div>
                 </div>
 
-                <!-- Nút Hành Động Ở PHÍA DƯỚI -->
+                <!-- Nút Hành Động -->
                 <div class="action-buttons">
                     <div class="btn-action" onclick="downloadQR()">
                         <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
@@ -442,7 +442,6 @@
                     document.getElementById('acc-number').innerText = data.accNumber;
                     document.getElementById('acc-owner').innerText = data.accOwner;
                     
-                    // Logo cắt viền ở đầu trang
                     if(data.logo) {
                         const logoImg = document.getElementById('bank-logo');
                         logoImg.src = data.logo;
@@ -467,11 +466,10 @@
             errEl.innerText = msg;
         }
 
-        // Copy hoàn toàn BỎ HIỆU ỨNG đổi icon/màu
         function copyText(elementId) {
             const text = document.getElementById(elementId).innerText;
             navigator.clipboard.writeText(text).then(() => {
-                alert("Đã sao chép: " + text); // Hiện thông báo nhỏ mặc định của hệ thống
+                alert("Đã sao chép: " + text); 
             }).catch(err => {
                 console.error('Copy Error: ', err);
             });
