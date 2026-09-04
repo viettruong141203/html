@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="page-title">Cổng Thanh Toán</title>
-    <!-- Thẻ Favicon mặc định, sẽ được thay đổi bằng JS -->
-    <link id="favicon" rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
+    <!-- Thẻ Icon Web (Sẽ được JS tự động đổi thành logo ngân hàng) -->
+    <link id="favicon" rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -18,10 +18,11 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #000000;
-            background-image: radial-gradient(circle at 50% 0%, #1f2937 0%, #000000 70%);
+            /* Nền màu sáng nhạt, có độ chuyển màu mượt mà */
+            background-color: #f0f2f5;
+            background-image: radial-gradient(circle at 50% -20%, #ffffff 0%, #f0f2f5 100%);
             background-attachment: fixed;
-            color: #ffffff;
+            color: #111827; /* Chữ màu tối */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -35,15 +36,14 @@
             z-index: 10;
         }
 
-        /* ----- Thẻ Card Chính ----- */
+        /* ----- Thẻ Card Chính (Giao diện Sáng) ----- */
         .payment-card {
-            background: rgba(24, 24, 27, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 28px;
+            background: #ffffff; /* Nền thẻ trắng tinh */
+            border-radius: 32px;
             padding: 35px 20px 30px 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            /* Bóng đổ siêu mềm mại để làm nổi thẻ lên khỏi nền */
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.04);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -57,7 +57,7 @@
 
         /* ----- Logo Phóng to & Cắt nền ----- */
         .top-logo-container {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -66,12 +66,13 @@
 
         .bank-logo {
             width: auto;
-            max-width: 220px; /* Đã phóng to đáng kể */
+            max-width: 220px; 
             height: auto;
-            max-height: 85px; 
+            max-height: 80px; 
             object-fit: contain;
-            display: none; /* Ẩn chờ load data */
-            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.6)); /* Đổ bóng tạo chiều sâu */
+            display: none;
+            /* Đổ bóng nhẹ cho logo trên nền sáng */
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.08)); 
         }
 
         /* ----- QR Code ----- */
@@ -85,13 +86,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); /* Bóng đổ cho khung QR */
+            border: 1px solid rgba(0,0,0,0.02);
         }
 
         .qr-image {
             width: 100%;
             height: 100%;
-            border-radius: 10px;
+            border-radius: 12px;
             object-fit: cover;
         }
 
@@ -104,13 +106,13 @@
         }
 
         .info-item {
-            background: rgba(255, 255, 255, 0.03);
+            background: #f9fafb; /* Xám rất nhạt */
             border-radius: 16px;
             padding: 14px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #f3f4f6;
         }
 
         .info-text {
@@ -120,7 +122,7 @@
         }
 
         .info-label {
-            color: #9ca3af;
+            color: #6b7280; /* Chữ nhãn màu xám */
             font-size: 12px;
             font-weight: 500;
             text-transform: uppercase;
@@ -128,7 +130,7 @@
         }
 
         .info-value {
-            color: #ffffff;
+            color: #111827; /* Chữ giá trị màu đen đậm */
             font-weight: 600;
             font-size: 15px;
             letter-spacing: 0.3px;
@@ -138,16 +140,21 @@
         .btn-copy {
             background: transparent;
             border: none;
-            color: #6b7280;
+            color: #9ca3af;
             cursor: pointer;
             width: 32px;
             height: 32px;
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: color 0.2s;
         }
 
-        /* ----- Nút Hành Động ----- */
+        .btn-copy:hover {
+            color: #4b5563; /* Đậm hơn xíu khi di chuột qua */
+        }
+
+        /* ----- Nút Hành Động (Đen nhám sang trọng) ----- */
         .action-buttons {
             display: flex;
             justify-content: space-between;
@@ -158,9 +165,9 @@
 
         .btn-action {
             flex: 1;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #ffffff;
+            background: #111827; /* Nền đen */
+            border: none;
+            color: #ffffff; /* Chữ trắng */
             border-radius: 14px;
             padding: 14px 0;
             display: flex;
@@ -171,11 +178,13 @@
             font-family: 'Inter', sans-serif;
             font-weight: 600;
             font-size: 14px;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 12px rgba(17, 24, 39, 0.2);
         }
 
         .btn-action:active {
-            background: rgba(255, 255, 255, 0.15);
+            background: #374151; /* Nhạt đi khi bấm */
+            transform: scale(0.98);
         }
 
         .btn-action svg {
@@ -187,7 +196,7 @@
         #loading {
             text-align: center;
             padding: 40px;
-            color: #9ca3af;
+            color: #6b7280;
             font-size: 14px;
             font-weight: 500;
             display: flex;
@@ -198,8 +207,8 @@
         
         .spinner {
             width: 24px; height: 24px;
-            border: 2px solid rgba(255,255,255,0.1);
-            border-top-color: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-top-color: #3b82f6; /* Vòng xoay màu xanh dương */
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -211,9 +220,9 @@
             color: #ef4444;
             font-weight: 500;
             display: none;
-            background: rgba(239, 68, 68, 0.1);
+            background: #fef2f2;
             border-radius: 12px;
-            border: 1px solid rgba(239, 68, 68, 0.2);
+            border: 1px solid #fecaca;
             font-size: 14px;
         }
 
@@ -221,13 +230,13 @@
 
         svg { fill: currentColor; }
 
-        /* ---------------- Modal Hướng Dẫn ---------------- */
+        /* ---------------- Modal Hướng Dẫn (Giao diện sáng) ---------------- */
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.4); /* Nền mờ phía sau modal */
+            backdrop-filter: blur(4px);
             z-index: 999;
             justify-content: center;
             align-items: center;
@@ -236,8 +245,8 @@
         }
 
         .modal-content {
-            background: #18181b;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
             border-radius: 24px;
             padding: 30px 25px;
             width: 90%;
@@ -245,6 +254,7 @@
             position: relative;
             transform: scale(0.95);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
         }
 
         .modal-overlay.active {
@@ -258,16 +268,16 @@
 
         .close-btn {
             position: absolute;
-            top: 20px;
+            top: 15px;
             right: 20px;
             color: #9ca3af;
             cursor: pointer;
-            width: 24px; height: 24px;
+            width: 30px; height: 30px;
             display: flex; justify-content: center; align-items: center;
         }
 
         .modal-title {
-            color: #ffffff;
+            color: #111827;
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 20px;
@@ -277,21 +287,22 @@
         .guide-steps { list-style: none; }
 
         .guide-steps li {
-            background: rgba(255, 255, 255, 0.03);
+            background: #f9fafb;
             border-radius: 12px;
             padding: 12px 14px;
             margin-bottom: 10px;
             font-size: 13.5px;
             line-height: 1.5;
-            color: #d1d5db;
+            color: #4b5563;
             display: flex;
             align-items: flex-start;
             gap: 12px;
+            border: 1px solid #f3f4f6;
         }
 
         .guide-steps li .step-num {
-            background: #ffffff;
-            color: #000000;
+            background: #111827;
+            color: #ffffff;
             min-width: 20px;
             height: 20px;
             border-radius: 50%;
@@ -303,21 +314,21 @@
             margin-top: 2px;
         }
         
-        .guide-steps strong { color: #ffffff; font-weight: 600; }
+        .guide-steps strong { color: #111827; font-weight: 600; }
 
-        /* ---------------- Toast Notification Nhỏ Gọn (Thay cho alert) ---------------- */
+        /* ---------------- Toast Notification ---------------- */
         .toast {
             position: fixed;
             bottom: 40px;
             left: 50%;
             transform: translateX(-50%) translateY(50px);
-            background: rgba(255, 255, 255, 0.95);
-            color: #000000;
+            background: #111827; /* Nền thông báo đen */
+            color: #ffffff; /* Chữ trắng */
             padding: 12px 24px;
             border-radius: 50px;
             font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             opacity: 0;
             pointer-events: none;
             transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -345,7 +356,7 @@
         <div id="content-wrapper">
             <div class="payment-card">
                 
-                <!-- Logo Phóng To -->
+                <!-- Logo Phóng To (Cắt nền) -->
                 <div class="top-logo-container">
                     <img id="bank-logo" class="bank-logo" src="" alt="Bank Logo">
                 </div>
@@ -391,17 +402,17 @@
                     </div>
                 </div>
 
-                <!-- Nút Hành Động -->
+                <!-- Nút Hành Động (Đen nhám) -->
                 <div class="action-buttons">
-                    <div class="btn-action" onclick="downloadQR()">
+                    <button class="btn-action" onclick="downloadQR()">
                         <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
                         Lưu Mã
-                    </div>
+                    </button>
                     
-                    <div class="btn-action" onclick="openModal()">
+                    <button class="btn-action" onclick="openModal()">
                         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
                         Hướng Dẫn
-                    </div>
+                    </button>
                 </div>
 
             </div>
@@ -412,7 +423,7 @@
     <div id="guideModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">
-                <svg viewBox="0 0 24 24" width="24" height="24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                <svg viewBox="0 0 24 24" width="28" height="28"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </span>
             <h3 class="modal-title">Hướng Dẫn Quét Mã</h3>
             <ul class="guide-steps">
@@ -450,6 +461,27 @@
 
         let currentQRUrl = "";
 
+        // Hàm thay đổi Favicon (Logo Tab Trình duyệt) chắc chắn hoạt động
+        function setFavicon(url) {
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.head.appendChild(link);
+            }
+            link.type = 'image/png';
+            link.href = url;
+            
+            // Hỗ trợ thêm cho iOS (Apple devices)
+            let appleLink = document.querySelector("link[rel='apple-touch-icon']");
+            if (!appleLink) {
+                appleLink = document.createElement('link');
+                appleLink.rel = 'apple-touch-icon';
+                document.head.appendChild(appleLink);
+            }
+            appleLink.href = url;
+        }
+
         async function fetchQRCode() {
             try {
                 const response = await fetch(webhookUrl, {
@@ -467,7 +499,7 @@
                 if (result.success && result.data) {
                     const data = result.data;
                     
-                    // 1. Cập nhật Tên Web (Title) theo tên ngân hàng
+                    // Cập nhật Tên Web
                     document.getElementById('page-title').innerText = data.bankName + " - Thanh toán";
 
                     currentQRUrl = `https://img.vietqr.io/image/${data.bin}-${data.accNumber}-qr_only.png`;
@@ -482,8 +514,8 @@
                         logoImg.src = data.logo;
                         logoImg.style.display = 'block';
 
-                        // 2. Cập nhật Icon Web (Favicon) theo logo ngân hàng
-                        document.getElementById('favicon').href = data.logo;
+                        // Cập nhật Logo Web (Favicon)
+                        setFavicon(data.logo);
                     }
 
                     document.getElementById('loading').style.display = 'none';
@@ -504,7 +536,6 @@
             errEl.innerText = msg;
         }
 
-        // Hàm gọi thông báo Toast
         let toastTimeout;
         function showToast(message) {
             const toast = document.getElementById('toast');
@@ -514,10 +545,9 @@
             clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => {
                 toast.classList.remove('show');
-            }, 2000); // Biến mất sau 2 giây
+            }, 2000); 
         }
 
-        // Bỏ alert(), thay bằng showToast()
         function copyText(elementId) {
             const text = document.getElementById(elementId).innerText;
             navigator.clipboard.writeText(text).then(() => {
