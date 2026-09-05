@@ -43,7 +43,7 @@
 
         /* ----- Thẻ Card Chính ----- */
         .payment-card {
-            background: rgba(30, 41, 59, 0.95); /* Tăng độ đậm nền một chút để ảnh tải về rõ nét */
+            background: rgba(30, 41, 59, 0.95);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-radius: 24px;
@@ -335,7 +335,7 @@
         <div id="error"></div>
 
         <div id="content-wrapper">
-            <!-- Thẻ này sẽ được html2canvas chụp lại làm ảnh -->
+            <!-- Thẻ capture-card chứa nội dung sẽ được xuất ra ảnh -->
             <div class="payment-card" id="capture-card">
                 
                 <div class="top-logo-container">
@@ -343,7 +343,6 @@
                 </div>
                 
                 <div class="qr-wrapper">
-                    <!-- Thêm crossorigin="anonymous" để html2canvas không bị chặn lấy ảnh -->
                     <img id="qr-image" class="qr-image" src="" alt="Mã QR" crossorigin="anonymous">
                 </div>
 
@@ -380,7 +379,6 @@
                 </div>
 
                 <div class="action-buttons" id="action-buttons">
-                    <!-- Đã gán lại sự kiện nút Lưu Mã gọi hàm chụp ảnh -->
                     <button class="btn-action" onclick="downloadImage()">
                         <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
                         Lưu Mã
@@ -398,32 +396,18 @@
 
     <!-- Modal Hướng Dẫn -->
     <div id="guideModal" class="modal-overlay">
+        <!-- Rút gọn phần Modal như mã trước để tiết kiệm không gian hiển thị -->
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">
                 <svg viewBox="0 0 24 24" width="24" height="24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </span>
             <h3 class="modal-title">Hướng Dẫn Quét Mã</h3>
             <ul class="guide-steps">
-                <li>
-                    <div class="step-num">1</div>
-                    <div>Bấm <strong>Lưu Mã</strong> để tải ảnh hóa đơn về điện thoại.</div>
-                </li>
-                <li>
-                    <div class="step-num">2</div>
-                    <div>Mở ứng dụng <strong>Ngân hàng</strong> hoặc Ví điện tử.</div>
-                </li>
-                <li>
-                    <div class="step-num">3</div>
-                    <div>Chọn tính năng <strong>Quét mã QR</strong>.</div>
-                </li>
-                <li>
-                    <div class="step-num">4</div>
-                    <div>Chọn tải lên ảnh từ <strong>Thư viện</strong>.</div>
-                </li>
-                <li>
-                    <div class="step-num">5</div>
-                    <div>Kiểm tra thông tin và hoàn tất thanh toán.</div>
-                </li>
+                <li><div class="step-num">1</div><div>Bấm <strong>Lưu Mã</strong> để tải ảnh hóa đơn về điện thoại.</div></li>
+                <li><div class="step-num">2</div><div>Mở ứng dụng <strong>Ngân hàng</strong> hoặc Ví điện tử.</div></li>
+                <li><div class="step-num">3</div><div>Chọn tính năng <strong>Quét mã QR</strong>.</div></li>
+                <li><div class="step-num">4</div><div>Chọn tải lên ảnh từ <strong>Thư viện</strong>.</div></li>
+                <li><div class="step-num">5</div><div>Kiểm tra thông tin và hoàn tất thanh toán.</div></li>
             </ul>
         </div>
     </div>
@@ -435,6 +419,22 @@
         const transactionId = urlParams.get('id') || 'BK926295'; 
         const webhookUrl = "https://script.google.com/macros/s/AKfycbzgeZU6ik9YDR8_dmP8cqsjlWOVyW-lX9J_mMGVONdSZnzhr_tj7UoRlKJTMz-TQYSYfg/exec";
 
+        // Hàm chuyển đổi hình ảnh sang định dạng Base64 để tránh lỗi CORS
+        async function toBase64(url) {
+            try {
+                const response = await fetch(url, { mode: 'cors' });
+                const blob = await response.blob();
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(blob);
+                });
+            } catch (error) {
+                console.warn("Không thể mã hóa ảnh sang Base64:", error);
+                return url; // Nếu lỗi trả về link gốc
+            }
+        }
+
         function setFavicon(url) {
             let link = document.querySelector("link[rel~='icon']");
             if (!link) {
@@ -444,14 +444,6 @@
             }
             link.type = 'image/png';
             link.href = url;
-            
-            let appleLink = document.querySelector("link[rel='apple-touch-icon']");
-            if (!appleLink) {
-                appleLink = document.createElement('link');
-                appleLink.rel = 'apple-touch-icon';
-                document.head.appendChild(appleLink);
-            }
-            appleLink.href = url;
         }
 
         async function fetchQRCode() {
@@ -473,19 +465,22 @@
                     
                     document.getElementById('page-title').innerText = data.bankName + " - Thanh toán";
 
-                    // Gắn ảnh QR (thêm tham số timestamp để vượt cache ảnh giúp html2canvas hoạt động tốt hơn)
-                    const qrUrl = `https://img.vietqr.io/image/${data.bin}-${data.accNumber}-qr_only.png?t=${new Date().getTime()}`;
-                    document.getElementById('qr-image').src = qrUrl;
+                    // Chuyển mã QR sang Base64 trước khi gán
+                    const qrUrl = `https://img.vietqr.io/image/${data.bin}-${data.accNumber}-qr_only.png`;
+                    const qrBase64 = await toBase64(qrUrl);
+                    document.getElementById('qr-image').src = qrBase64;
                     
                     document.getElementById('bank-name').innerText = data.bankName;
                     document.getElementById('acc-number').innerText = data.accNumber;
                     document.getElementById('acc-owner').innerText = data.accOwner;
                     
                     if(data.logo) {
+                        // Chuyển Logo ngân hàng sang Base64 trước khi gán
+                        const logoBase64 = await toBase64(data.logo);
                         const logoImg = document.getElementById('bank-logo');
-                        logoImg.src = data.logo;
+                        logoImg.src = logoBase64;
                         logoImg.style.display = 'block';
-                        setFavicon(data.logo);
+                        setFavicon(logoBase64);
                     }
 
                     document.getElementById('loading').style.display = 'none';
@@ -527,32 +522,30 @@
             });
         }
 
-        // --- HÀM MỚI: CHỤP ẢNH GIAO DIỆN BẰNG HTML2CANVAS ---
+        // HÀM CHỤP ẢNH ĐÃ ĐƯỢC SỬA LỖI MẤT LOGO
         async function downloadImage() {
             showToast("Đang tạo ảnh hóa đơn...");
             const card = document.getElementById('capture-card');
             const buttons = document.getElementById('action-buttons');
             const copyIcons = document.querySelectorAll('.btn-copy');
 
-            // Ẩn 2 Nút hành động và các icon copy đi trước khi chụp
+            // Tạm thời ẩn nút để xuất ảnh
             buttons.style.display = 'none';
             copyIcons.forEach(icon => icon.style.display = 'none');
 
             try {
-                // Đợi 1 nhịp để trình duyệt render lại DOM sau khi ẩn nút
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise(resolve => setTimeout(resolve, 150));
 
                 const canvas = await html2canvas(card, {
-                    backgroundColor: '#162032', // Đổ màu nền viền giống giao diện
-                    scale: 3, // Tăng độ phân giải lên gấp 3 lần cho sắc nét
-                    useCORS: true, // Cho phép tải ảnh QR và Logo từ domain khác
-                    allowTaint: true,
+                    backgroundColor: '#162032', // Màu trùng với viền thiết kế
+                    scale: 3, 
+                    useCORS: true, 
+                    allowTaint: false, // Bắt buộc false để xuất file ảnh được
                     logging: false
                 });
 
                 const image = canvas.toDataURL("image/png");
                 
-                // Tự động tải xuống
                 const link = document.createElement('a');
                 link.href = image;
                 link.download = `HoaDon_ThanhToan_${transactionId}.png`;
@@ -563,9 +556,9 @@
                 showToast("Đã lưu ảnh thành công!");
             } catch (err) {
                 console.error(err);
-                showToast("Không thể tạo ảnh tự động. Vui lòng chụp màn hình!");
+                showToast("Vui lòng chụp màn hình để lưu QR.");
             } finally {
-                // Bật lại các nút và icon copy về như cũ
+                // Hiển thị lại các nút
                 buttons.style.display = 'flex';
                 copyIcons.forEach(icon => icon.style.display = 'flex');
             }
