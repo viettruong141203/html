@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title id="page-title">Cổng Thanh Toán</title>
-    <!-- Thẻ Icon Web tự động đổi thành logo ngân hàng -->
     <link id="favicon" rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
+    
+    <!-- Thư viện html2canvas để chụp ảnh giao diện -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -19,13 +21,11 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            /* Khung nền hơi tối (Dim Mode) */
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
             color: #f8fafc;
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Dùng dvh để khớp 100% với mọi trình duyệt di động */
             height: 100dvh; 
             overflow: hidden;
             padding: 16px;
@@ -43,7 +43,7 @@
 
         /* ----- Thẻ Card Chính ----- */
         .payment-card {
-            background: rgba(30, 41, 59, 0.75);
+            background: rgba(30, 41, 59, 0.95); /* Tăng độ đậm nền một chút để ảnh tải về rõ nét */
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-radius: 24px;
@@ -53,12 +53,10 @@
             flex-direction: column;
             align-items: center;
             animation: fadeUp 0.5s ease-out;
-            /* Cho phép cuộn nội dung bên trong nếu màn hình quá nhỏ */
             overflow-y: auto;
             max-height: 95dvh;
         }
 
-        /* Ẩn thanh cuộn */
         .payment-card::-webkit-scrollbar { width: 0px; }
 
         @keyframes fadeUp {
@@ -66,7 +64,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ----- Logo Phóng to & Cắt nền ----- */
+        /* ----- Logo Phóng to ----- */
         .top-logo-container {
             margin-bottom: 20px;
             display: flex;
@@ -82,7 +80,6 @@
             max-height: 65px; 
             object-fit: contain;
             display: none;
-            /* Bóng đổ mờ giúp logo nổi bật trên nền hơi tối */
             filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5)); 
         }
 
@@ -136,7 +133,6 @@
             color: #94a3b8;
             font-size: 12px;
             font-weight: 500;
-            /* Đã tắt uppercase, chỉ viết hoa chữ đầu do HTML quy định */
         }
 
         .info-value {
@@ -146,7 +142,6 @@
             letter-spacing: 0.2px;
         }
 
-        /* Nút copy hoàn toàn tĩnh */
         .btn-copy {
             background: transparent;
             border: none;
@@ -340,24 +335,21 @@
         <div id="error"></div>
 
         <div id="content-wrapper">
-            <div class="payment-card">
+            <!-- Thẻ này sẽ được html2canvas chụp lại làm ảnh -->
+            <div class="payment-card" id="capture-card">
                 
-                <!-- Logo Phóng To -->
                 <div class="top-logo-container">
-                    <img id="bank-logo" class="bank-logo" src="" alt="Bank Logo">
+                    <img id="bank-logo" class="bank-logo" src="" alt="Bank Logo" crossorigin="anonymous">
                 </div>
                 
-                <!-- Khu vực Mã QR -->
                 <div class="qr-wrapper">
-                    <img id="qr-image" class="qr-image" src="" alt="Mã QR">
+                    <!-- Thêm crossorigin="anonymous" để html2canvas không bị chặn lấy ảnh -->
+                    <img id="qr-image" class="qr-image" src="" alt="Mã QR" crossorigin="anonymous">
                 </div>
 
-                <!-- Danh sách Thông tin -->
                 <div class="info-list">
-                    <!-- Ngân hàng -->
                     <div class="info-item">
                         <div class="info-text">
-                            <!-- Viết hoa chữ đầu -->
                             <span class="info-label">Ngân hàng</span>
                             <span class="info-value" id="bank-name">---</span>
                         </div>
@@ -366,10 +358,8 @@
                         </button>
                     </div>
 
-                    <!-- Số tài khoản -->
                     <div class="info-item">
                         <div class="info-text">
-                            <!-- Viết hoa chữ đầu -->
                             <span class="info-label">Số tài khoản</span>
                             <span class="info-value" id="acc-number">---</span>
                         </div>
@@ -378,10 +368,8 @@
                         </button>
                     </div>
 
-                    <!-- Chủ tài khoản -->
                     <div class="info-item">
                         <div class="info-text">
-                            <!-- Viết hoa chữ đầu -->
                             <span class="info-label">Chủ tài khoản</span>
                             <span class="info-value" id="acc-owner">---</span>
                         </div>
@@ -391,9 +379,9 @@
                     </div>
                 </div>
 
-                <!-- Nút Hành Động -->
-                <div class="action-buttons">
-                    <button class="btn-action" onclick="downloadQR()">
+                <div class="action-buttons" id="action-buttons">
+                    <!-- Đã gán lại sự kiện nút Lưu Mã gọi hàm chụp ảnh -->
+                    <button class="btn-action" onclick="downloadImage()">
                         <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
                         Lưu Mã
                     </button>
@@ -418,7 +406,7 @@
             <ul class="guide-steps">
                 <li>
                     <div class="step-num">1</div>
-                    <div>Bấm <strong>Lưu Mã</strong> để tải ảnh QR về điện thoại.</div>
+                    <div>Bấm <strong>Lưu Mã</strong> để tải ảnh hóa đơn về điện thoại.</div>
                 </li>
                 <li>
                     <div class="step-num">2</div>
@@ -440,7 +428,6 @@
         </div>
     </div>
 
-    <!-- Thông báo ẩn (Toast) -->
     <div id="toast" class="toast">Đã sao chép!</div>
 
     <script>
@@ -448,9 +435,6 @@
         const transactionId = urlParams.get('id') || 'BK926295'; 
         const webhookUrl = "https://script.google.com/macros/s/AKfycbzgeZU6ik9YDR8_dmP8cqsjlWOVyW-lX9J_mMGVONdSZnzhr_tj7UoRlKJTMz-TQYSYfg/exec";
 
-        let currentQRUrl = "";
-
-        // Tự động đổi biểu tượng tab trình duyệt
         function setFavicon(url) {
             let link = document.querySelector("link[rel~='icon']");
             if (!link) {
@@ -489,9 +473,10 @@
                     
                     document.getElementById('page-title').innerText = data.bankName + " - Thanh toán";
 
-                    currentQRUrl = `https://img.vietqr.io/image/${data.bin}-${data.accNumber}-qr_only.png`;
-
-                    document.getElementById('qr-image').src = currentQRUrl;
+                    // Gắn ảnh QR (thêm tham số timestamp để vượt cache ảnh giúp html2canvas hoạt động tốt hơn)
+                    const qrUrl = `https://img.vietqr.io/image/${data.bin}-${data.accNumber}-qr_only.png?t=${new Date().getTime()}`;
+                    document.getElementById('qr-image').src = qrUrl;
+                    
                     document.getElementById('bank-name').innerText = data.bankName;
                     document.getElementById('acc-number').innerText = data.accNumber;
                     document.getElementById('acc-owner').innerText = data.accOwner;
@@ -530,7 +515,7 @@
             clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => {
                 toast.classList.remove('show');
-            }, 2000); 
+            }, 2500); 
         }
 
         function copyText(elementId) {
@@ -542,25 +527,50 @@
             });
         }
 
-        async function downloadQR() {
-            if(!currentQRUrl) return;
+        // --- HÀM MỚI: CHỤP ẢNH GIAO DIỆN BẰNG HTML2CANVAS ---
+        async function downloadImage() {
+            showToast("Đang tạo ảnh hóa đơn...");
+            const card = document.getElementById('capture-card');
+            const buttons = document.getElementById('action-buttons');
+            const copyIcons = document.querySelectorAll('.btn-copy');
+
+            // Ẩn 2 Nút hành động và các icon copy đi trước khi chụp
+            buttons.style.display = 'none';
+            copyIcons.forEach(icon => icon.style.display = 'none');
+
             try {
-                const response = await fetch(currentQRUrl);
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = `QR_${transactionId}.png`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
+                // Đợi 1 nhịp để trình duyệt render lại DOM sau khi ẩn nút
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                const canvas = await html2canvas(card, {
+                    backgroundColor: '#162032', // Đổ màu nền viền giống giao diện
+                    scale: 3, // Tăng độ phân giải lên gấp 3 lần cho sắc nét
+                    useCORS: true, // Cho phép tải ảnh QR và Logo từ domain khác
+                    allowTaint: true,
+                    logging: false
+                });
+
+                const image = canvas.toDataURL("image/png");
+                
+                // Tự động tải xuống
+                const link = document.createElement('a');
+                link.href = image;
+                link.download = `HoaDon_ThanhToan_${transactionId}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showToast("Đã lưu ảnh thành công!");
             } catch (err) {
-                showToast("Vui lòng chụp màn hình để lưu QR");
+                console.error(err);
+                showToast("Không thể tạo ảnh tự động. Vui lòng chụp màn hình!");
+            } finally {
+                // Bật lại các nút và icon copy về như cũ
+                buttons.style.display = 'flex';
+                copyIcons.forEach(icon => icon.style.display = 'flex');
             }
         }
 
-        /* ----- Modal Scripts ----- */
         const modal = document.getElementById('guideModal');
         function openModal() { modal.classList.add('active'); }
         function closeModal() { modal.classList.remove('active'); }
