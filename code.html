@@ -6,7 +6,7 @@
     <title id="page-title">Cổng Thanh Toán</title>
     <link id="favicon" rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
     
-    <!-- Thư viện html2canvas để chụp ảnh giao diện -->
+    <!-- Thư viện html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
@@ -43,7 +43,7 @@
 
         /* ----- Thẻ Card Chính ----- */
         .payment-card {
-            background: rgba(30, 41, 59, 0.95);
+            background: rgba(30, 41, 59, 0.75);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-radius: 24px;
@@ -79,7 +79,7 @@
             height: auto;
             max-height: 65px; 
             object-fit: contain;
-            display: none;
+            display: none; /* Ẩn đi khi chưa tải xong để không hiện icon vỡ */
             filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5)); 
         }
 
@@ -103,6 +103,7 @@
             height: 100%;
             border-radius: 10px;
             object-fit: cover;
+            display: none;
         }
 
         /* ----- Danh Sách Thông Tin ----- */
@@ -182,14 +183,8 @@
             transition: background 0.2s;
         }
 
-        .btn-action:active {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .btn-action svg {
-            width: 18px;
-            height: 18px;
-        }
+        .btn-action:active { background: rgba(255, 255, 255, 0.15); }
+        .btn-action svg { width: 18px; height: 18px; }
 
         /* ----- Loading & Error ----- */
         #loading {
@@ -225,113 +220,45 @@
         }
 
         #content-wrapper { display: none; width: 100%; }
-
         svg { fill: currentColor; }
 
-        /* ---------------- Modal Hướng Dẫn ---------------- */
+        /* ---------------- Modal & Toast ---------------- */
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(4px);
-            z-index: 999;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
+            z-index: 999; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s ease;
         }
-
         .modal-content {
-            background: #1e293b;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 24px;
-            width: 90%;
-            max-width: 340px;
-            position: relative;
-            transform: scale(0.95);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; padding: 24px; width: 90%; max-width: 340px;
+            position: relative; transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
         .modal-overlay.active { display: flex; opacity: 1; }
         .modal-overlay.active .modal-content { transform: scale(1); }
-
         .close-btn {
-            position: absolute;
-            top: 16px; right: 16px;
-            color: #94a3b8;
-            cursor: pointer;
-            width: 24px; height: 24px;
-            display: flex; justify-content: center; align-items: center;
+            position: absolute; top: 16px; right: 16px; color: #94a3b8; cursor: pointer;
+            width: 24px; height: 24px; display: flex; justify-content: center; align-items: center;
         }
-
-        .modal-title {
-            color: #f8fafc;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            text-align: center;
-        }
-
+        .modal-title { color: #f8fafc; font-size: 16px; font-weight: 600; margin-bottom: 16px; text-align: center; }
         .guide-steps { list-style: none; }
-
-        .guide-steps li {
-            background: rgba(255,255,255,0.03);
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 8px;
-            font-size: 13px;
-            line-height: 1.5;
-            color: #cbd5e1;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .guide-steps li .step-num {
-            background: #f8fafc;
-            color: #0f172a;
-            min-width: 18px; height: 18px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 11px; margin-top: 1px;
-        }
+        .guide-steps li { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: 13px; line-height: 1.5; color: #cbd5e1; display: flex; align-items: flex-start; gap: 10px; }
+        .guide-steps li .step-num { background: #f8fafc; color: #0f172a; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; margin-top: 1px; }
         
-        .guide-steps strong { color: #f8fafc; font-weight: 600; }
-
-        /* ---------------- Toast Notification ---------------- */
         .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(30px);
-            background: #f8fafc; 
-            color: #0f172a;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 600;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            z-index: 1000;
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(30px);
+            background: #f8fafc; color: #0f172a; padding: 10px 20px; border-radius: 30px;
+            font-size: 13px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 1000;
         }
-
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
     </style>
 </head>
 <body>
 
     <div class="main-container">
         
-        <div id="loading">
-            <div class="spinner"></div>
-            Đang tải dữ liệu...
-        </div>
-        
+        <div id="loading"><div class="spinner"></div>Đang tải dữ liệu...</div>
         <div id="error"></div>
 
         <div id="content-wrapper">
@@ -383,7 +310,6 @@
                         <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
                         Lưu Mã
                     </button>
-                    
                     <button class="btn-action" onclick="openModal()">
                         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
                         Hướng Dẫn
@@ -396,14 +322,13 @@
 
     <!-- Modal Hướng Dẫn -->
     <div id="guideModal" class="modal-overlay">
-        <!-- Rút gọn phần Modal như mã trước để tiết kiệm không gian hiển thị -->
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">
                 <svg viewBox="0 0 24 24" width="24" height="24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </span>
             <h3 class="modal-title">Hướng Dẫn Quét Mã</h3>
             <ul class="guide-steps">
-                <li><div class="step-num">1</div><div>Bấm <strong>Lưu Mã</strong> để tải ảnh hóa đơn về điện thoại.</div></li>
+                <li><div class="step-num">1</div><div>Bấm <strong>Lưu Mã</strong> để tải ảnh hóa đơn về.</div></li>
                 <li><div class="step-num">2</div><div>Mở ứng dụng <strong>Ngân hàng</strong> hoặc Ví điện tử.</div></li>
                 <li><div class="step-num">3</div><div>Chọn tính năng <strong>Quét mã QR</strong>.</div></li>
                 <li><div class="step-num">4</div><div>Chọn tải lên ảnh từ <strong>Thư viện</strong>.</div></li>
@@ -419,31 +344,47 @@
         const transactionId = urlParams.get('id') || 'BK926295'; 
         const webhookUrl = "https://script.google.com/macros/s/AKfycbzgeZU6ik9YDR8_dmP8cqsjlWOVyW-lX9J_mMGVONdSZnzhr_tj7UoRlKJTMz-TQYSYfg/exec";
 
-        // Hàm chuyển đổi hình ảnh sang định dạng Base64 để tránh lỗi CORS
-        async function toBase64(url) {
+        // ----- HÀM HỖ TRỢ XỬ LÝ LỖI ẢNH (CORS / LỖI MẠNG) -----
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        async function getSafeBase64(url) {
+            // Cách 1: Tải trực tiếp (chống cache để tránh lỗi CORS ẩn)
             try {
-                const response = await fetch(url, { mode: 'cors' });
-                const blob = await response.blob();
-                return new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.readAsDataURL(blob);
-                });
-            } catch (error) {
-                console.warn("Không thể mã hóa ảnh sang Base64:", error);
-                return url; // Nếu lỗi trả về link gốc
-            }
+                const fetchUrl = url + (url.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+                const res = await fetch(fetchUrl, { mode: 'cors' });
+                if (res.ok) {
+                    const blob = await res.blob();
+                    return await blobToBase64(blob);
+                }
+            } catch(e) {}
+            
+            // Cách 2: Nếu trực tiếp bị chặn, dùng Trạm Proxy trung gian (AllOrigins)
+            try {
+                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+                const res = await fetch(proxyUrl, { mode: 'cors' });
+                if (res.ok) {
+                    const blob = await res.blob();
+                    return await blobToBase64(blob);
+                }
+            } catch(e) {}
+            
+            return url; // Nếu đều thất bại, trả về link gốc
         }
 
         function setFavicon(url) {
             let link = document.querySelector("link[rel~='icon']");
-            if (!link) {
-                link = document.createElement('link');
-                link.rel = 'icon';
-                document.head.appendChild(link);
-            }
-            link.type = 'image/png';
-            link.href = url;
+            if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+            link.type = 'image/png'; link.href = url;
+            let appleLink = document.querySelector("link[rel='apple-touch-icon']");
+            if (!appleLink) { appleLink = document.createElement('link'); appleLink.rel = 'apple-touch-icon'; document.head.appendChild(appleLink); }
+            appleLink.href = url;
         }
 
         async function fetchQRCode() {
@@ -451,36 +392,37 @@
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        sheet: "Ngân hàng",
-                        action: "check",
-                        id: transactionId
-                    })
+                    body: JSON.stringify({ sheet: "Ngân hàng", action: "check", id: transactionId })
                 });
 
                 const result = await response.json();
 
                 if (result.success && result.data) {
                     const data = result.data;
-                    
                     document.getElementById('page-title').innerText = data.bankName + " - Thanh toán";
 
-                    // Chuyển mã QR sang Base64 trước khi gán
-                    const qrUrl = `https://img.vietqr.io/image/${data.bin}-${data.accNumber}-qr_only.png`;
-                    const qrBase64 = await toBase64(qrUrl);
-                    document.getElementById('qr-image').src = qrBase64;
-                    
+                    // Gắn thông tin Text
                     document.getElementById('bank-name').innerText = data.bankName;
                     document.getElementById('acc-number').innerText = data.accNumber;
                     document.getElementById('acc-owner').innerText = data.accOwner;
                     
+                    // Xử lý mã QR an toàn
+                    const qrUrl = `https://img.vietqr.io/image/${data.bin}-${data.accNumber}-qr_only.png`;
+                    const qrSafeUrl = await getSafeBase64(qrUrl);
+                    const qrImg = document.getElementById('qr-image');
+                    qrImg.onload = () => { qrImg.style.display = 'block'; };
+                    qrImg.src = qrSafeUrl;
+                    
+                    // Xử lý Logo Ngân hàng an toàn (Ẩn nếu link chết)
                     if(data.logo) {
-                        // Chuyển Logo ngân hàng sang Base64 trước khi gán
-                        const logoBase64 = await toBase64(data.logo);
+                        const logoSafeUrl = await getSafeBase64(data.logo);
                         const logoImg = document.getElementById('bank-logo');
-                        logoImg.src = logoBase64;
-                        logoImg.style.display = 'block';
-                        setFavicon(logoBase64);
+                        
+                        logoImg.onload = () => { logoImg.style.display = 'block'; };
+                        logoImg.onerror = () => { logoImg.style.display = 'none'; }; // Ẩn logo nếu lỗi
+                        
+                        logoImg.src = logoSafeUrl;
+                        setFavicon(logoSafeUrl);
                     }
 
                     document.getElementById('loading').style.display = 'none';
@@ -506,46 +448,50 @@
             const toast = document.getElementById('toast');
             toast.innerText = message;
             toast.classList.add('show');
-            
             clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                toast.classList.remove('show');
-            }, 2500); 
+            toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 2500); 
         }
 
         function copyText(elementId) {
-            const text = document.getElementById(elementId).innerText;
-            navigator.clipboard.writeText(text).then(() => {
+            navigator.clipboard.writeText(document.getElementById(elementId).innerText).then(() => {
                 showToast("Đã sao chép thành công"); 
-            }).catch(err => {
-                console.error('Copy Error: ', err);
             });
         }
 
-        // HÀM CHỤP ẢNH ĐÃ ĐƯỢC SỬA LỖI MẤT LOGO
+        // ----- SỬA LỖI ẢNH BỊ XÁM ĐEN KHI TẢI VỀ -----
         async function downloadImage() {
             showToast("Đang tạo ảnh hóa đơn...");
             const card = document.getElementById('capture-card');
             const buttons = document.getElementById('action-buttons');
             const copyIcons = document.querySelectorAll('.btn-copy');
 
-            // Tạm thời ẩn nút để xuất ảnh
+            // 1. Lưu lại các thuộc tính mờ nguyên bản
+            const origBg = card.style.background;
+            const origBackdrop = card.style.backdropFilter;
+            const origWebkitBackdrop = card.style.webkitBackdropFilter;
+
+            // 2. Ẩn nút bấm để xuất hóa đơn sạch sẽ
             buttons.style.display = 'none';
             copyIcons.forEach(icon => icon.style.display = 'none');
 
+            // 3. FIX LỖI ẢNH XÁM: Tạm thời tắt hiệu ứng kính mờ (blur) và đổ màu nền cứng `#1e293b`
+            card.style.background = '#1e293b'; 
+            card.style.backdropFilter = 'none';
+            card.style.webkitBackdropFilter = 'none';
+
             try {
-                await new Promise(resolve => setTimeout(resolve, 150));
+                // Đợi 0.2s để trình duyệt áp dụng màu nền cứng
+                await new Promise(resolve => setTimeout(resolve, 200));
 
                 const canvas = await html2canvas(card, {
-                    backgroundColor: '#162032', // Màu trùng với viền thiết kế
-                    scale: 3, 
+                    backgroundColor: '#1e293b', 
+                    scale: 3, // Phân giải cao (sắc nét gấp 3 lần)
                     useCORS: true, 
-                    allowTaint: false, // Bắt buộc false để xuất file ảnh được
+                    allowTaint: false,
                     logging: false
                 });
 
                 const image = canvas.toDataURL("image/png");
-                
                 const link = document.createElement('a');
                 link.href = image;
                 link.download = `HoaDon_ThanhToan_${transactionId}.png`;
@@ -558,18 +504,20 @@
                 console.error(err);
                 showToast("Vui lòng chụp màn hình để lưu QR.");
             } finally {
-                // Hiển thị lại các nút
+                // 4. Phục hồi lại toàn bộ giao diện kính mờ và hiện nút lại như cũ
                 buttons.style.display = 'flex';
                 copyIcons.forEach(icon => icon.style.display = 'flex');
+                
+                card.style.background = origBg;
+                card.style.backdropFilter = origBackdrop;
+                card.style.webkitBackdropFilter = origWebkitBackdrop;
             }
         }
 
         const modal = document.getElementById('guideModal');
         function openModal() { modal.classList.add('active'); }
         function closeModal() { modal.classList.remove('active'); }
-        window.onclick = function(event) {
-            if (event.target == modal) closeModal();
-        }
+        window.onclick = function(event) { if (event.target == modal) closeModal(); }
 
         fetchQRCode();
     </script>
