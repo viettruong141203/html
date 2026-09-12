@@ -29,6 +29,8 @@
             height: 100dvh; 
             overflow: hidden;
             padding: 16px;
+            text-rendering: geometricPrecision; /* Tối ưu độ nét của chữ */
+            -webkit-font-smoothing: antialiased;
         }
 
         .main-container {
@@ -55,6 +57,7 @@
             animation: fadeUp 0.5s ease-out;
             overflow-y: auto;
             max-height: 95dvh;
+            position: relative;
         }
 
         .payment-card::-webkit-scrollbar { width: 0px; }
@@ -79,8 +82,10 @@
             height: auto;
             max-height: 65px; 
             object-fit: contain;
-            display: none; /* Ẩn đi khi chưa tải xong để không hiện icon vỡ */
+            display: none; 
             filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5)); 
+            image-rendering: high-quality;
+            image-rendering: -webkit-optimize-contrast; /* Chống mờ ảnh tĩnh */
         }
 
         /* ----- QR Code ----- */
@@ -104,6 +109,8 @@
             border-radius: 10px;
             object-fit: cover;
             display: none;
+            image-rendering: high-quality;
+            image-rendering: -webkit-optimize-contrast;
         }
 
         /* ----- Danh Sách Thông Tin ----- */
@@ -257,14 +264,11 @@
 <body>
 
     <div class="main-container">
-        
         <div id="loading"><div class="spinner"></div>Đang tải dữ liệu...</div>
         <div id="error"></div>
 
         <div id="content-wrapper">
-            <!-- Thẻ capture-card chứa nội dung sẽ được xuất ra ảnh -->
             <div class="payment-card" id="capture-card">
-                
                 <div class="top-logo-container">
                     <img id="bank-logo" class="bank-logo" src="" alt="Bank Logo" crossorigin="anonymous">
                 </div>
@@ -315,7 +319,6 @@
                         Hướng Dẫn
                     </button>
                 </div>
-
             </div>
         </div>
     </div>
@@ -344,7 +347,6 @@
         const transactionId = urlParams.get('id') || 'BK926295'; 
         const webhookUrl = "https://script.google.com/macros/s/AKfycbzgeZU6ik9YDR8_dmP8cqsjlWOVyW-lX9J_mMGVONdSZnzhr_tj7UoRlKJTMz-TQYSYfg/exec";
 
-        // ----- HÀM HỖ TRỢ XỬ LÝ LỖI ẢNH (CORS / LỖI MẠNG) -----
         function blobToBase64(blob) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -355,7 +357,6 @@
         }
 
         async function getSafeBase64(url) {
-            // Cách 1: Tải trực tiếp (chống cache để tránh lỗi CORS ẩn)
             try {
                 const fetchUrl = url + (url.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
                 const res = await fetch(fetchUrl, { mode: 'cors' });
@@ -365,7 +366,6 @@
                 }
             } catch(e) {}
             
-            // Cách 2: Nếu trực tiếp bị chặn, dùng Trạm Proxy trung gian (AllOrigins)
             try {
                 const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
                 const res = await fetch(proxyUrl, { mode: 'cors' });
@@ -375,16 +375,13 @@
                 }
             } catch(e) {}
             
-            return url; // Nếu đều thất bại, trả về link gốc
+            return url; 
         }
 
         function setFavicon(url) {
             let link = document.querySelector("link[rel~='icon']");
             if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
             link.type = 'image/png'; link.href = url;
-            let appleLink = document.querySelector("link[rel='apple-touch-icon']");
-            if (!appleLink) { appleLink = document.createElement('link'); appleLink.rel = 'apple-touch-icon'; document.head.appendChild(appleLink); }
-            appleLink.href = url;
         }
 
         async function fetchQRCode() {
@@ -401,26 +398,21 @@
                     const data = result.data;
                     document.getElementById('page-title').innerText = data.bankName + " - Thanh toán";
 
-                    // Gắn thông tin Text
                     document.getElementById('bank-name').innerText = data.bankName;
                     document.getElementById('acc-number').innerText = data.accNumber;
                     document.getElementById('acc-owner').innerText = data.accOwner;
                     
-                    // Xử lý mã QR an toàn
                     const qrUrl = `https://img.vietqr.io/image/${data.bin}-${data.accNumber}-qr_only.png`;
                     const qrSafeUrl = await getSafeBase64(qrUrl);
                     const qrImg = document.getElementById('qr-image');
                     qrImg.onload = () => { qrImg.style.display = 'block'; };
                     qrImg.src = qrSafeUrl;
                     
-                    // Xử lý Logo Ngân hàng an toàn (Ẩn nếu link chết)
                     if(data.logo) {
                         const logoSafeUrl = await getSafeBase64(data.logo);
                         const logoImg = document.getElementById('bank-logo');
-                        
                         logoImg.onload = () => { logoImg.style.display = 'block'; };
-                        logoImg.onerror = () => { logoImg.style.display = 'none'; }; // Ẩn logo nếu lỗi
-                        
+                        logoImg.onerror = () => { logoImg.style.display = 'none'; };
                         logoImg.src = logoSafeUrl;
                         setFavicon(logoSafeUrl);
                     }
@@ -458,40 +450,43 @@
             });
         }
 
-        // ----- SỬA LỖI ẢNH BỊ XÁM ĐEN KHI TẢI VỀ -----
+        // ----- FIX LỖI MỜ ẢNH VÀ XÁM NỀN HOÀN CHỈNH -----
         async function downloadImage() {
-            showToast("Đang tạo ảnh hóa đơn...");
+            showToast("Đang tạo ảnh hóa đơn siêu nét...");
             const card = document.getElementById('capture-card');
             const buttons = document.getElementById('action-buttons');
             const copyIcons = document.querySelectorAll('.btn-copy');
 
-            // 1. Lưu lại các thuộc tính mờ nguyên bản
             const origBg = card.style.background;
             const origBackdrop = card.style.backdropFilter;
             const origWebkitBackdrop = card.style.webkitBackdropFilter;
 
-            // 2. Ẩn nút bấm để xuất hóa đơn sạch sẽ
+            // Ẩn nút bấm
             buttons.style.display = 'none';
             copyIcons.forEach(icon => icon.style.display = 'none');
 
-            // 3. FIX LỖI ẢNH XÁM: Tạm thời tắt hiệu ứng kính mờ (blur) và đổ màu nền cứng `#1e293b`
+            // Tắt kính mờ, đổ nền cứng
             card.style.background = '#1e293b'; 
             card.style.backdropFilter = 'none';
             card.style.webkitBackdropFilter = 'none';
 
             try {
-                // Đợi 0.2s để trình duyệt áp dụng màu nền cứng
                 await new Promise(resolve => setTimeout(resolve, 200));
+
+                // Tính toán tỷ lệ pixel thiết bị, ép nhân 3 hoặc 4 để sắc nét tối đa
+                const devicePixelRatio = window.devicePixelRatio || 1;
+                const ultraScale = devicePixelRatio * 3; 
 
                 const canvas = await html2canvas(card, {
                     backgroundColor: '#1e293b', 
-                    scale: 3, // Phân giải cao (sắc nét gấp 3 lần)
+                    scale: ultraScale, 
                     useCORS: true, 
                     allowTaint: false,
                     logging: false
                 });
 
-                const image = canvas.toDataURL("image/png");
+                // Xuất file chuẩn 100% Quality
+                const image = canvas.toDataURL("image/png", 1.0);
                 const link = document.createElement('a');
                 link.href = image;
                 link.download = `HoaDon_ThanhToan_${transactionId}.png`;
@@ -504,7 +499,7 @@
                 console.error(err);
                 showToast("Vui lòng chụp màn hình để lưu QR.");
             } finally {
-                // 4. Phục hồi lại toàn bộ giao diện kính mờ và hiện nút lại như cũ
+                // Khôi phục giao diện ban đầu
                 buttons.style.display = 'flex';
                 copyIcons.forEach(icon => icon.style.display = 'flex');
                 
