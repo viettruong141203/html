@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm dữ liệu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5; --primary-hover: #4338ca;
+            --bg-main: #f8fafc; --surface: #ffffff;
+            --text-main: #0f172a; --text-muted: #64748b;
+            --border: #e2e8f0; --radius: 12px;
+            --danger: #ef4444; --danger-bg: #fef2f2;
+            --success: #10b981;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-main); color: var(--text-main); line-height: 1.5; padding: 30px 15px; }
+        .wrapper { max-width: 900px; margin: 0 auto; }
+        
+        header { text-align: center; margin-bottom: 20px; }
+        header h1 { font-size: 24px; font-weight: 700; color: var(--text-main); }
+        header p { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+
+        .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .card-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 200px; gap: 12px; }
+        @media(max-width: 650px) { .grid-2 { grid-template-columns: 1fr; } }
+        
+        .field { margin-bottom: 12px; }
+        label { display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; }
+        input[type="text"] { width: 100%; padding: 9px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 8px; outline: none; background: #fff; color: var(--text-main); transition: border 0.2s; }
+        input[type="text"]:focus { border-color: var(--primary); }
+        input[readonly] { background-color: #f1f5f9; color: var(--text-muted); cursor: not-allowed; }
+
+        /* Navigation Tabs */
+        .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; background: #e2e8f0; padding: 4px; border-radius: var(--radius); }
+        @media(max-width: 600px) { .tabs { grid-template-columns: repeat(2, 1fr); } }
+        .tab-btn { padding: 9px; font-size: 13px; font-weight: 600; border: none; background: transparent; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+
+        .action-panel { display: none; }
+        .action-panel.active { display: block; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 10px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; background: var(--primary); color: white; transition: 0.2s; }
+        .btn:hover { background: var(--primary-hover); }
+        .btn-outline { background: transparent; color: var(--primary); border: 1px dashed var(--primary); margin-top: 8px; }
+        .btn-outline:hover { background: rgba(79, 70, 229, 0.04); }
+        .btn-icon-danger { background: var(--danger-bg); color: var(--danger); padding: 8px 12px; border-radius: 8px; border: none; cursor: pointer; }
+
+        .dynamic-container { max-height: 200px; overflow-y: auto; padding-right: 4px; }
+        .dynamic-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; background: #f8fafc; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); }
+        .col-tag { font-size: 12px; font-weight: 700; color: var(--primary); min-width: 45px; background: #e0e7ff; padding: 4px; border-radius: 6px; text-align: center; }
+        .note { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; background: #f1f5f9; padding: 10px; border-radius: 8px; border-left: 3px solid var(--primary); }
+
+        /* Terminal Logs */
+        .log-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media(max-width: 700px) { .log-grid { grid-template-columns: 1fr; } }
+        .terminal-box { background: #0f172a; color: #e2e8f0; padding: 12px 14px; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-size: 12px; height: 180px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+        .terminal-box.req { background: #1e293b; color: #38bdf8; }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <header>
+        <h1>Google Sheets Control Center</h1>
+        <p>Hệ thống quản lý dữ liệu tự động mở rộng cột & định dạng văn bản</p>
+    </header>
+
+    <!-- Cấu hình chung -->
+    <div class="card">
+        <div class="card-title">⚙️ Cấu hình kết nối chung</div>
+        <div class="grid-2">
+            <div class="field" style="margin-bottom:0;">
+                <label>Web App URL</label>
+                <input type="text" id="webAppUrl" value="https://script.google.com/macros/s/AKfycbyOz_0L9XUbwzt50UNG7M9ftZKmeYx_NdTFjep5hc25OeTfb1YlhiwvkCPUV4fHGMeMqA/exec" readonly>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+                <label>Tên Sheet đích</label>
+                <input type="text" id="sheetName" value="Thanh toán">
+            </div>
+        </div>
+    </div>
+
+    <!-- Thanh Menu Chuyển Hành Động -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('get', this)">📥 Lấy dữ liệu (GET)</button>
+        <button class="tab-btn" onclick="switchTab('check', this)">🔍 Kiểm tra (CHECK)</button>
+        <button class="tab-btn" onclick="switchTab('add', this)">✨ Thêm mới (ADD)</button>
+        <button class="tab-btn" onclick="switchTab('edit', this)">✏️ Chỉnh sửa (EDIT)</button>
+    </div>
+
+    <!-- 1. PANEL GET -->
+    <div id="panel-get" class="card action-panel active">
+        <div class="card-title">📥 Truy vấn toàn bộ dữ liệu</div>
+        <p class="note">Tải toàn bộ cấu trúc và danh sách bản ghi hiện có từ Google Sheet.</p>
+        <button class="btn" onclick="sendAction('get')">Gửi yêu cầu Tải dữ liệu</button>
+    </div>
+
+    <!-- 2. PANEL CHECK -->
+    <div id="panel-check" class="card action-panel">
+        <div class="card-title">🔍 Kiểm tra thông tin theo ID</div>
+        <div class="field">
+            <label>Mã ID cần tra cứu (Cột A)</label>
+            <input type="text" id="checkID" placeholder="Ví dụ: 26094821">
+        </div>
+        <button class="btn" onclick="sendAction('check')">Thực hiện Check</button>
+    </div>
+
+    <!-- 3. PANEL ADD -->
+    <div id="panel-add" class="card action-panel">
+        <div class="card-title">✨ Thêm mới bản ghi</div>
+        <div class="note">Cột A (ID tự động) • Cột B (Thời gian tự động). Nhập dữ liệu từ <strong>Cột C</strong> trở đi:</div>
+        <div id="addColumnsContainer" class="dynamic-container"></div>
+        <button type="button" class="btn btn-outline" onclick="addColumnInput('addColumnsContainer', 'cot-input')">+ Thêm trường dữ liệu</button>
+        <button class="btn" style="margin-top: 14px;" onclick="sendAction('add')">Thực hiện Thêm mới</button>
+    </div>
+
+    <!-- 4. PANEL EDIT -->
+    <div id="panel-edit" class="card action-panel">
+        <div class="card-title">✏️ Chỉnh sửa bản ghi</div>
+        <div class="field">
+            <label>Mã ID dòng cần sửa (Cột A)</label>
+            <input type="text" id="editID" placeholder="Ví dụ: 26094821">
+        </div>
+        <div class="note">Chọn các cột cần cập nhật giá trị mới từ <strong>Cột C</strong> trở đi:</div>
+        <div id="editColumnsContainer" class="dynamic-container"></div>
+        <button type="button" class="btn btn-outline" onclick="addColumnInput('editColumnsContainer', 'edit-cot-input')">+ Thêm trường cần sửa</button>
+        <button class="btn" style="margin-top: 14px;" onclick="sendAction('edit')">Xác nhận Cập nhật</button>
+    </div>
+
+    <!-- Nhật ký Gửi & Nhận chung -->
+    <div class="card">
+        <div class="log-grid">
+            <div>
+                <div class="card-title">📤 Nhật ký Gửi đi (Request)</div>
+                <div id="requestOutput" class="terminal-box req">Chưa có lệnh nào được gửi...</div>
+            </div>
+            <div>
+                <div class="card-title">💻 Nhật ký Phản hồi (Response)</div>
+                <div id="responseOutput" class="terminal-box">Hệ thống sẵn sàng...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Chuyển đổi tab hành động
+    function switchTab(actionName, btnElement) {
+        document.querySelectorAll('.action-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById('panel-' + actionName).classList.add('active');
+        btnElement.classList.add('active');
+    }
+
+    // Tính tên cột Excel/Sheets (C, D, E... AA, AB...)
+    function getColumnLetter(index) {
+        let temp, letter = '';
+        index += 2; // Bắt đầu từ Cột C (index = 2)
+        while (index >= 0) {
+            temp = index % 26;
+            letter = String.fromCharCode(temp + 65) + letter;
+            index = Math.floor(index / 26) - 1;
+        }
+        return letter;
+    }
+
+    // Thêm dòng nhập liệu động
+    function addColumnInput(containerId, inputClass) {
+        const container = document.getElementById(containerId);
+        const letter = getColumnLetter(container.children.length);
+        const div = document.createElement('div');
+        div.className = 'dynamic-row';
+        div.innerHTML = `
+            <span class="col-tag">${letter}</span>
+            <input type="text" class="${inputClass}" data-col="${letter}" placeholder="Nhập giá trị...">
+            <button type="button" class="btn-icon-danger" onclick="this.parentElement.remove(); reindexColumns('${containerId}', '${inputClass}');">✕</button>
+        `;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // Cập nhật lại nhãn cột khi xóa bớt
+    function reindexColumns(containerId, inputClass) {
+        const rows = document.getElementById(containerId).children;
+        for (let i = 0; i < rows.length; i++) {
+            const letter = getColumnLetter(i);
+            rows[i].querySelector('.col-tag').innerText = letter;
+            rows[i].querySelector('input').setAttribute('data-col', letter);
+        }
+    }
+
+    // Khởi tạo sẵn 2 ô nhập cho phần Add và 1 ô cho Edit khi load trang
+    window.onload = function() {
+        addColumnInput('addColumnsContainer', 'cot-input');
+        addColumnInput('addColumnsContainer', 'cot-input');
+        addColumnInput('editColumnsContainer', 'edit-cot-input');
+    };
+
+    // Hàm tổng hợp gửi dữ liệu tùy theo hành động đang chọn
+    async function sendAction(action) {
+        const url = document.getElementById('webAppUrl').value.trim();
+        const sheet = document.getElementById('sheetName').value.trim();
+        const reqOutput = document.getElementById('requestOutput');
+        const resOutput = document.getElementById('responseOutput');
+
+        if (!url) { alert("Vui lòng nhập Web App URL!"); return; }
+
+        let payload = { sheet: sheet, action: action };
+
+        if (action === 'check') {
+            const id = document.getElementById('checkID').value.trim();
+            if (!id) { alert("Vui lòng nhập mã ID cần check!"); return; }
+            payload.ID = id;
+        } 
+        else if (action === 'add') {
+            document.querySelectorAll('.cot-input').forEach(input => {
+                const col = input.getAttribute('data-col');
+                if (input.value.trim() !== "") {
+                    payload[`Cot_${col}`] = input.value.trim();
+                }
+            });
+        } 
+        else if (action === 'edit') {
+            const id = document.getElementById('editID').value.trim();
+            if (!id) { alert("Vui lòng nhập mã ID cần sửa!"); return; }
+            payload.ID = id;
+
+            document.querySelectorAll('.edit-cot-input').forEach(input => {
+                const col = input.getAttribute('data-col');
+                if (input.value.trim() !== "") {
+                    payload[`Cot_${col}`] = input.value.trim();
+                }
+            });
+        }
+
+        reqOutput.innerText = JSON.stringify(payload, null, 4);
+        resOutput.innerText = "⏳ Đang xử lý yêu cầu...";
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            resOutput.innerText = JSON.stringify(result, null, 4);
+        } catch (error) {
+            resOutput.innerText = "❌ Lỗi kết nối:\n" + error;
+        }
+    }
+</script>
+</body>
+</html>
