@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quét QR Liên Tục & Đồng Bộ Bảng Dữ Liệu</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.85);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-color: #f8fafc;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #22c55e;
+            --secondary: #475569;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        h2, h3 {
+            text-align: center;
+            margin-top: 0;
+            color: #e2e8f0;
+        }
+
+        .counter {
+            text-align: center;
+            font-size: 0.95rem;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        #reader {
+            width: 100% !important;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color) !important;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        #reader video {
+            border-radius: 12px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: center;
+        }
+
+        .btn-action:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .last-scanned {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            word-break: break-all;
+            color: #cbd5e1;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        #status {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            min-height: 20px;
+        }
+
+        .success { color: var(--success); }
+        .error { color: var(--danger); }
+        .info { color: #38bdf8; }
+
+        /* Bảng dữ liệu */
+        .table-container {
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.8);
+            color: #38bdf8;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <!-- Khối Quét QR -->
+        <div class="card">
+            <h2>Quét QR Liên Tục - Gửi Ngầm</h2>
+            <div class="counter" id="counter">Đã gửi ngầm thành công: <b>0</b> mã</div>
+
+            <div class="action-buttons">
+                <button id="toggleBtn" class="btn-action" onclick="toggleScanner()">📷 Bật Quét Ngầm</button>
+            </div>
+
+            <div id="reader"></div>
+
+            <div>
+                <label>Mã vừa quét gần nhất:</label>
+                <div class="last-scanned" id="lastCode">Chưa có...</div>
+            </div>
+
+            <div id="status"></div>
+        </div>
+
+        <!-- Khối Bảng Dữ Liệu CODE -->
+        <div class="card">
+            <h3>Danh Sách Dữ Liệu (Sheet: CODE)</h3>
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>ID (Cot_A)</th>
+                            <th>Thời Gian (Cot_B)</th>
+                            <th>Nội Dung (Cot_C)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: #94a3b8;">Đang tải dữ liệu...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyOz_0L9XUbwzt50UNG7M9ftZKmeYx_NdTFjep5hc25OeTfb1YlhiwvkCPUV4fHGMeMqA/exec";
+        const html5QrCode = new Html5Qrcode("reader");
+        let isScanning = false;
+        let successCount = 0;
+        let recentScans = {};
+
+        // 1. Tự động tải bảng dữ liệu khi mở trang
+        window.onload = function() {
+            fetchTableData();
+        };
+
+        // Hàm gọi ACTION: get để lấy toàn bộ dữ liệu bảng CODE
+        async function fetchTableData() {
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ "sheet": "CODE", "action": "get" })
+                });
+                
+                const result = await response.json();
+                
+                // Giả sử API trả về mảng dữ liệu hoặc object chứa mảng trong result.data / result.rows
+                // Điều chỉnh theo cấu trúc phản hồi thực tế từ Google Apps Script của bạn
+                let rows = [];
+                if (Array.isArray(result)) {
+                    rows = result;
+                } else if (result.data && Array.isArray(result.data)) {
+                    rows = result.data;
+                } else if (result.rows && Array.isArray(result.rows)) {
+                    rows = result.rows;
+                }
+
+                renderTable(rows);
+            } catch (error) {
+                console.error("Lỗi tải dữ liệu bảng:", error);
+            }
+        }
+
+        // Đổ dữ liệu vào bảng HTML
+        function renderTable(rows) {
+            const tbody = document.querySelector("#dataTable tbody");
+            tbody.innerHTML = "";
+
+            if (!rows || rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #94a3b8;">Chưa có dữ liệu nào.</td></tr>`;
+                return;
+            }
+
+            // Sắp xếp hiển thị bản ghi mới nhất lên đầu (nếu cần)
+            rows.reverse().forEach(row => {
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${row.Cot_A || row.id || ''}</td>
+                    <td>${row.Cot_B || row.time || ''}</td>
+                    <td><b>${row.Cot_C || ''}</b></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 2. Quét camera liên tục
+        function toggleScanner() {
+            if (!isScanning) {
+                document.getElementById('reader').style.display = "block";
+                document.getElementById('toggleBtn').innerText = "⏹ Dừng Quét";
+                document.getElementById('toggleBtn').classList.add('btn-danger');
+                document.getElementById('status').innerHTML = '<span class="info">Đang quét liên tục...</span>';
+                
+                isScanning = true;
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 15, qrbox: { width: 250, height: 250 } },
+                    onScanSuccess,
+                    (errorMessage) => {}
+                ).catch(err => {
+                    document.getElementById('status').innerHTML = `<span class="error">Không mở được camera: ${err}</span>`;
+                    stopScanner();
+                });
+            } else {
+                stopScanner();
+            }
+        }
+
+        function stopScanner() {
+            if (isScanning) {
+                html5QrCode.stop().then(() => {
+                    isScanning = false;
+                    document.getElementById('reader').style.display = "none";
+                    document.getElementById('toggleBtn').innerText = "📷 Bật Quét Ngầm";
+                    document.getElementById('toggleBtn').classList.remove('btn-danger');
+                    document.getElementById('status').innerHTML = '<span class="info">Đã dừng quét.</span>';
+                }).catch(err => console.log(err));
+            }
+        }
+
+        // Khi quét thành công -> Gửi ngầm và tự động cập nhật lại bảng
+        function onScanSuccess(decodedText) {
+            const currentTime = Date.now();
+            if (recentScans[decodedText] && (currentTime - recentScans[decodedText] < 3000)) {
+                return; 
+            }
+            recentScans[decodedText] = currentTime;
+
+            document.getElementById('lastCode').innerText = decodedText;
+            sendBackground(decodedText);
+        }
+
+        async function sendBackground(code) {
+            const payload = {
+                "sheet": "CODE",
+                "action": "add",
+                "Cot_C": code
+            };
+
+            try {
+                await fetch(WEBHOOK_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                successCount++;
+                document.getElementById('counter').innerHTML = `Đã gửi ngầm thành công: <b>${successCount}</b> mã`;
+                document.getElementById('status').innerHTML = `<span class="success">⚡ Đã đẩy mã [${code}] lên Sheets!</span>`;
+                
+                playBeep();
+
+                // Tự động gọi tải lại bảng dữ liệu để cập nhật hàng mới xuất hiện
+                fetchTableData();
+
+            } catch (error) {
+                successCount++;
+                document.getElementById('counter').innerHTML = `Đã gửi ngầm thành công: <b>${successCount}</b> mã`;
+                document.getElementById('status').innerHTML = `<span class="success">⚡ Đã gửi ngầm mã [${code}]!</span>`;
+                fetchTableData();
+            }
+        }
+
+        function playBeep() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 880;
+                gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.08);
+            } catch(e) {}
+        }
+    </script>
+</body>
+</html>
