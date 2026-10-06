@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tài khoản ngân hàng</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Scrollbar mượt cho danh sách ngân hàng */
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f8fafc; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-3 sm:p-4">
+
+    <!-- THÔNG BÁO NỔI PHÍA DƯỚI (TOAST BOTTOM) -->
+    <div id="toastNotification" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-sm font-bold shadow-2xl flex items-center gap-2.5 transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-none"></div>
+
+    <!-- Card Container -->
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200/80 max-w-md w-full p-5 sm:p-6 relative">
+        
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-2.5 shadow-sm border border-indigo-100">
+                <i class="fa-solid fa-building-columns text-xl"></i>
+            </div>
+            <h2 class="text-xl font-bold text-slate-800">Thông tin ngân hàng</h2>
+            <p class="text-xs text-slate-500 mt-1">Nhập thông tin tài khoản để lưu vào hệ thống</p>
+        </div>
+
+        <form id="bankForm" class="space-y-4">
+            
+            <!-- 1. CUSTOM SELECT NGÂN HÀNG -->
+            <div class="relative w-full" id="customSelectWrapper">
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">
+                    Ngân hàng <span class="text-rose-500">*</span>
+                </label>
+                
+                <!-- Nút bấm chọn ngân hàng -->
+                <button type="button" id="selectBtn" class="w-full bg-slate-50 hover:bg-slate-100/80 border border-slate-300 text-slate-700 rounded-xl px-3 py-2 text-left flex items-center justify-between transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 min-h-[50px]">
+                    <div id="selectedBankDisplay" class="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+                        <i class="fa-solid fa-credit-card text-slate-400 shrink-0 ml-1"></i>
+                        <span class="text-slate-400 text-sm truncate">NGÂN HÀNG</span>
+                    </div>
+                    <i id="selectArrow" class="fa-solid fa-chevron-down text-slate-400 text-xs shrink-0 transition-transform duration-200 ml-1"></i>
+                </button>
+
+                <!-- Menu Dropdown -->
+                <div id="dropdownMenu" class="hidden absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden">
+                    
+                    <!-- Ô tìm kiếm ghim ở đầu -->
+                    <div class="p-2 border-b border-slate-100 bg-slate-50 sticky top-0 z-10">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="bankSearchInput" placeholder="Tìm theo tên hoặc viết tắt..." class="w-full bg-white border border-slate-200 text-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                        </div>
+                    </div>
+
+                    <!-- Danh sách Scrollable -->
+                    <div id="bankList" class="max-h-60 overflow-y-auto custom-scrollbar p-1 divide-y divide-slate-50">
+                        <div class="p-3 text-center text-xs text-slate-400">
+                            <i class="fa-solid fa-circle-notch animate-spin mr-1"></i> Đang tải danh sách ngân hàng...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. SỐ TÀI KHOẢN -->
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">
+                    Số tài khoản <span class="text-rose-500">*</span>
+                </label>
+                <input type="text" id="accountNumber" required placeholder="Nhập số tài khoản" class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 uppercase transition-all placeholder:text-slate-400 font-semibold tracking-wide">
+            </div>
+
+            <!-- 3. CHỦ TÀI KHOẢN -->
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">
+                    Chủ tài khoản <span class="text-rose-500">*</span>
+                </label>
+                <input type="text" id="accountHolder" required placeholder="NGUYEN VAN A" class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 uppercase transition-all placeholder:text-slate-400 font-semibold tracking-wide">
+            </div>
+
+            <!-- Nút Gửi -->
+            <button type="submit" id="submitBtn" class="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-600/20 active:scale-[0.99] transition duration-200 text-sm flex items-center justify-center gap-2">
+                <span id="btnText">Lưu thông tin</span>
+                <div id="btnSpinner" class="hidden animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyOz_0L9XUbwzt50UNG7M9ftZKmeYx_NdTFjep5hc25OeTfb1YlhiwvkCPUV4fHGMeMqA/exec";
+        const API_BANKS_URL = "https://api.vietqr.io/v2/banks";
+
+        let banksData = [];
+        let selectedBank = null;
+        let toastTimer = null;
+
+        // Elements DOM
+        const selectBtn = document.getElementById('selectBtn');
+        const selectArrow = document.getElementById('selectArrow');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+        const bankSearchInput = document.getElementById('bankSearchInput');
+        const bankList = document.getElementById('bankList');
+        const selectedBankDisplay = document.getElementById('selectedBankDisplay');
+
+        const accountNumberInput = document.getElementById('accountNumber');
+        const accountHolderInput = document.getElementById('accountHolder');
+        const bankForm = document.getElementById('bankForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+        const toastNotification = document.getElementById('toastNotification');
+
+        // Hàm xóa dấu tiếng Việt & viết hoa
+        function removeAccents(str) {
+            return str
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/đ/g, "d")
+                .replace(/Đ/g, "D")
+                .toUpperCase();
+        }
+
+        // HÀM HIỂN THỊ THÔNG BÁO NỔI PhíA DƯỚI (BOTTOM TOAST)
+        function showToast(message, isSuccess = true, duration = 1000) {
+            if (toastTimer) clearTimeout(toastTimer);
+
+            if (isSuccess) {
+                toastNotification.className = "fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-sm font-bold bg-emerald-600 text-white shadow-xl shadow-emerald-600/30 border border-emerald-500 flex items-center gap-2.5 transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-none";
+                toastNotification.innerHTML = `<i class="fa-solid fa-circle-check text-lg"></i><span>${message}</span>`;
+            } else {
+                toastNotification.className = "fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-sm font-bold bg-rose-600 text-white shadow-xl shadow-rose-600/30 border border-rose-500 flex items-center gap-2.5 transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-none";
+                toastNotification.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-lg"></i><span>${message}</span>`;
+            }
+
+            // Trượt từ dưới lên (Slide Up)
+            setTimeout(() => {
+                toastNotification.classList.remove('translate-y-4', 'opacity-0');
+                toastNotification.classList.add('translate-y-0', 'opacity-100');
+            }, 10);
+
+            // Tự động ẩn xuống dưới sau thời gian cài đặt (1000ms = 1 giây)
+            toastTimer = setTimeout(() => {
+                toastNotification.classList.remove('translate-y-0', 'opacity-100');
+                toastNotification.classList.add('translate-y-4', 'opacity-0');
+            }, duration);
+        }
+
+        // 1. Tải danh sách Ngân hàng từ VietQR
+        async function loadBanks() {
+            try {
+                const res = await fetch(API_BANKS_URL);
+                const data = await res.json();
+
+                if (data.code === "00" && Array.isArray(data.data)) {
+                    banksData = data.data;
+                    renderBankList(banksData);
+                } else {
+                    bankList.innerHTML = `<div class="p-3 text-center text-xs text-rose-500">Lỗi tải dữ liệu ngân hàng</div>`;
+                }
+            } catch (err) {
+                console.error("Lỗi VietQR API:", err);
+                bankList.innerHTML = `<div class="p-3 text-center text-xs text-rose-500">Lỗi kết nối API VietQR</div>`;
+            }
+        }
+
+        // 2. Hiển thị danh sách ngân hàng
+        function renderBankList(list) {
+            if (list.length === 0) {
+                bankList.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Không tìm thấy ngân hàng nào</div>`;
+                return;
+            }
+
+            bankList.innerHTML = list.map(bank => `
+                <div onclick="selectBank('${bank.bin}')" class="flex items-center gap-2.5 p-2.5 hover:bg-indigo-50/70 rounded-lg cursor-pointer transition-colors duration-150 group min-w-0">
+                    <div class="w-11 h-7 bg-white border border-slate-200 rounded-md p-0.5 flex items-center justify-center shrink-0 shadow-sm">
+                        <img src="${bank.logo}" alt="${bank.shortName}" class="max-h-full max-w-full object-contain" loading="lazy">
+                    </div>
+                    <div class="min-w-0 flex-1 leading-tight">
+                        <div class="text-xs font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">
+                            ${bank.shortName}
+                        </div>
+                        <div class="text-[11px] text-slate-400 truncate">${bank.name}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 3. Xử lý khi chọn ngân hàng
+        window.selectBank = function(bin) {
+            selectedBank = banksData.find(b => b.bin === bin);
+            if (selectedBank) {
+                selectedBankDisplay.innerHTML = `
+                    <div class="flex items-center gap-2.5 min-w-0 w-full">
+                        <div class="w-11 h-7 bg-white border border-slate-200 rounded-md p-0.5 flex items-center justify-center shrink-0 shadow-sm">
+                            <img src="${selectedBank.logo}" alt="${selectedBank.shortName}" class="max-h-full max-w-full object-contain">
+                        </div>
+                        <div class="min-w-0 flex-1 leading-tight text-left">
+                            <div class="text-xs font-bold text-slate-800 truncate">${selectedBank.shortName}</div>
+                            <div class="text-[11px] text-slate-400 truncate">${selectedBank.name}</div>
+                        </div>
+                    </div>
+                `;
+                closeDropdown();
+            }
+        };
+
+        // Tìm kiếm ngân hàng
+        bankSearchInput.addEventListener('input', function() {
+            const keyword = removeAccents(this.value.toLowerCase().trim());
+            const filtered = banksData.filter(b => {
+                const name = removeAccents((b.name || '').toLowerCase());
+                const shortName = removeAccents((b.shortName || '').toLowerCase());
+                const code = removeAccents((b.code || '').toLowerCase());
+                const bin = (b.bin || '').toLowerCase();
+                return name.includes(keyword) || shortName.includes(keyword) || code.includes(keyword) || bin.includes(keyword);
+            });
+            renderBankList(filtered);
+        });
+
+        // Toggle Bật/Tắt Dropdown
+        selectBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = dropdownMenu.classList.contains('hidden');
+            if (isHidden) {
+                dropdownMenu.classList.remove('hidden');
+                selectArrow.classList.add('rotate-180');
+                bankSearchInput.focus();
+            } else {
+                closeDropdown();
+            }
+        });
+
+        function closeDropdown() {
+            dropdownMenu.classList.add('hidden');
+            selectArrow.classList.remove('rotate-180');
+            bankSearchInput.value = '';
+            renderBankList(banksData);
+        }
+
+        // Click bên ngoài tự đóng dropdown
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('customSelectWrapper').contains(e.target)) {
+                closeDropdown();
+            }
+        });
+
+        // 4. SỐ TÀI KHOẢN: CHỈ CHO PHÉP NHẬP SỐ VÀ CHỮ HOA KHÔNG DẤU, KHÔNG CHO KHOẢNG TRẮNG
+        accountNumberInput.addEventListener('input', function() {
+            this.value = removeAccents(this.value).replace(/[^A-Z0-9]/g, '');
+        });
+
+        // 5. CHỦ TÀI KHOẢN: CHỈ CHO PHÉP CHỮ HOA KHÔNG DẤU VÀ KHOẢNG TRẮNG (KHÔNG NHẬP SỐ / KÝ TỰ ĐẶC BIỆT)
+        accountHolderInput.addEventListener('input', function() {
+            this.value = removeAccents(this.value).replace(/[^A-Z\s]/g, '');
+        });
+
+        // 6. Gửi dữ liệu & Hiển thị thông báo nổi phía dưới
+        bankForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!selectedBank) {
+                showToast("Vui lòng chọn ngân hàng thụ hưởng!", false, 2500);
+                return;
+            }
+
+            const payload = {
+                sheet: "Ngân hàng",
+                action: "add",
+                Cot_C: selectedBank.shortName || selectedBank.name,
+                Cot_D: selectedBank.bin,
+                Cot_E: accountNumberInput.value.trim(),
+                Cot_F: accountHolderInput.value.trim(),
+                Cot_G: selectedBank.logo
+            };
+
+            // Loading state
+            submitBtn.disabled = true;
+            btnText.textContent = "Đang gửi...";
+            btnSpinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    // Thông báo nổi ở dưới "Lưu thành công" và tự ẩn sau 1000ms (1s)
+                    showToast("Lưu thành công", true, 1000);
+                    
+                    // Reset Form
+                    bankForm.reset();
+                    selectedBank = null;
+                    selectedBankDisplay.innerHTML = `
+                        <i class="fa-solid fa-credit-card text-slate-400 shrink-0 ml-1"></i>
+                        <span class="text-slate-400 text-sm truncate">Chọn ngân hàng thụ hưởng...</span>
+                    `;
+                } else {
+                    showToast(result.message || 'Thất bại!', false, 3000);
+                }
+            } catch (err) {
+                console.error("Lỗi kết nối:", err);
+                showToast("Lỗi kết nối tới hệ thống!", false, 3000);
+            } finally {
+                submitBtn.disabled = false;
+                btnText.textContent = "Lưu thông tin";
+                btnSpinner.classList.add('hidden');
+            }
+        });
+
+        // Khởi chạy
+        loadBanks();
+    </script>
+</body>
+</html>
