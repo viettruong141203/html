@@ -3,135 +3,207 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trình Duyệt Web Trực Tiếp</title>
+  <title>Danh sách</title>
   <style>
-    body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; overflow: hidden; background-color: #000; }
-    
-    /* Khung iframe chiếm toàn màn hình */
-    .iframe-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
-    iframe { width: 100%; height: 100%; border: none; background: #fff;}
-
-    /* Nút Menu nổi trong suốt */
-    .menu-btn {
-      position: fixed;
-      top: 15px; left: 15px; z-index: 101;
-      background: rgba(47, 54, 64, 0.5); /* Nền bán trong suốt */
-      backdrop-filter: blur(5px);
-      color: white; border: none; padding: 10px 15px;
-      border-radius: 6px; cursor: pointer;
-      font-weight: bold; font-size: 16px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-      transition: background 0.3s;
+    :root {
+      --bg-sidebar: rgba(24, 28, 33, 0.95);
+      --primary: #3498db;
+      --text-light: #f5f6fa;
     }
-    .menu-btn:hover { background: rgba(47, 54, 64, 0.8); }
+    
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; height: 100vh; overflow: hidden; background-color: #0f1115; }
+    
+    /* Khung iframe toàn màn hình */
+    .iframe-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; display: flex; justify-content: center; align-items: center; color: #555;}
+    .iframe-container span.placeholder { font-size: 16px; font-style: italic; opacity: 0.7; }
+    iframe { width: 100%; height: 100%; border: none; background: #fff; position: relative; z-index: 2;}
 
-    /* Thanh điều hướng (Sidebar) với nền trong suốt (Glassmorphism) */
+    /* Cụm nút bấm nổi ở góc (Menu và Toàn màn hình) */
+    .floating-controls {
+      position: fixed; top: 20px; left: 20px; z-index: 100;
+      display: flex; gap: 10px;
+    }
+
+    .float-btn {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9); color: #333;
+      display: flex; justify-content: center; align-items: center;
+      font-size: 20px; cursor: pointer; border: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      backdrop-filter: blur(4px); transition: all 0.2s ease;
+    }
+    .float-btn:hover { background: #fff; transform: scale(1.05); }
+
+    /* Lớp phủ làm tối màn hình khi mở menu */
+    .overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.4); z-index: 101;
+      opacity: 0; visibility: hidden; transition: 0.3s;
+    }
+    .overlay.show { opacity: 1; visibility: visible; }
+
+    /* Thanh điều hướng tối giản */
     .sidebar { 
-      position: fixed; top: 0; left: -320px; /* Ẩn đi mặc định */
-      width: 300px; height: 100vh; 
-      background: rgba(30, 39, 46, 0.85); /* Trong suốt nhẹ */
-      backdrop-filter: blur(8px);
-      color: white; display: flex; flex-direction: column; z-index: 100;
-      box-shadow: 5px 0 15px rgba(0,0,0,0.3);
-      transition: left 0.3s ease-in-out;
+      position: fixed; top: 0; left: -320px; width: 280px; height: 100vh; 
+      background: var(--bg-sidebar); backdrop-filter: blur(10px);
+      color: var(--text-light); display: flex; flex-direction: column; z-index: 102;
+      box-shadow: 5px 0 20px rgba(0,0,0,0.5); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .sidebar.open { left: 0; } /* Class thêm vào để hiện menu */
+    .sidebar.open { left: 0; }
 
-    .sidebar-header { padding: 20px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;}
-    .sidebar-header h3 { margin: 0; font-size: 16px; text-transform: uppercase; width: 100%; text-align: center; color: #fff;}
+    .sidebar-header { padding: 25px 20px 15px; display: flex; flex-direction: column; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .header-top { display: flex; justify-content: space-between; align-items: center; }
+    .header-top h3 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: 0.5px; }
+    .close-btn { background: none; border: none; color: #aaa; font-size: 20px; cursor: pointer; padding: 0; transition: color 0.2s; }
+    .close-btn:hover { color: #fff; }
+
+    .action-buttons { display: flex; gap: 10px; }
+    .btn-action { 
+      flex: 1; padding: 8px; border: none; border-radius: 20px; 
+      font-size: 13px; font-weight: 600; cursor: pointer; color: #fff; transition: 0.2s; 
+    }
+    .btn-add { background: var(--primary); }
+    .btn-add:hover { background: #2980b9; }
+    .btn-refresh { background: rgba(255,255,255,0.1); }
+    .btn-refresh:hover { background: rgba(255,255,255,0.2); }
+
+    .nav-list { list-style: none; padding: 10px 0; margin: 0; overflow-y: auto; flex: 1; }
+    .nav-item { 
+      padding: 12px 20px; margin: 4px 10px; border-radius: 8px;
+      cursor: pointer; transition: 0.2s; font-size: 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-item::before { content: "•"; color: #555; font-size: 18px; }
+    .nav-item:hover { background: rgba(255,255,255,0.05); }
+    .nav-item.active { background: rgba(52, 152, 219, 0.15); color: var(--primary); font-weight: 500; }
+    .nav-item.active::before { color: var(--primary); }
     
-    .btn-action { color: #fff; border: none; padding: 8px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; flex: 1; transition: 0.2s;}
-    .btn-add { background-color: rgba(225, 177, 44, 0.9); }
-    .btn-add:hover { background-color: #e1b12c; }
-    .btn-refresh { background-color: rgba(0, 151, 230, 0.9); }
-    .btn-refresh:hover { background-color: #0097e6; }
-    .btn-close { background-color: rgba(232, 65, 24, 0.8); width: 100%; margin-top: 5px;}
+    .loading-text { padding: 20px; text-align: center; color: #7f8c8d; font-size: 13px; }
 
-    .nav-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1; }
-    .nav-item { padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.2s ease; font-size: 15px; }
-    .nav-item:hover { background-color: rgba(0, 151, 230, 0.5); padding-left: 25px; }
-    .nav-item.active { background-color: rgba(0, 168, 255, 0.7); border-left: 4px solid #fff; }
-    .loading-text { padding: 20px; text-align: center; color: #ccc; font-style: italic; font-size: 14px;}
-
-    /* Modal Thêm dữ liệu */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 105; }
-    .modal { background: #fff; padding: 25px; border-radius: 8px; width: 90%; max-width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-    .modal h3 { margin-top: 0; margin-bottom: 20px; color: #333; text-align: center; }
-    .modal label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; font-size: 14px;}
-    .modal input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    .modal-actions { display: flex; justify-content: space-between; gap: 10px;}
-    .btn-save { flex: 1; padding: 10px; background: #0097e6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;}
-    .btn-cancel { flex: 1; padding: 10px; background: #e84118; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;}
+    /* Modal Form tối giản */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); display: none; justify-content: center; align-items: center; z-index: 105; }
+    .modal { background: #fff; padding: 30px; border-radius: 16px; width: 85%; max-width: 360px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .modal h3 { margin: 0 0 20px 0; color: #2c3e50; text-align: center; font-size: 18px; }
+    .modal label { display: block; margin-bottom: 6px; font-weight: 500; color: #7f8c8d; font-size: 13px;}
+    .modal input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #dfe6e9; border-radius: 8px; box-sizing: border-box; font-size: 14px; outline: none; transition: border 0.2s;}
+    .modal input:focus { border-color: var(--primary); }
+    
+    .modal-actions { display: flex; gap: 12px;}
+    .btn-save { flex: 1; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;}
+    .btn-cancel { flex: 1; padding: 12px; background: #ecf0f1; color: #7f8c8d; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;}
   </style>
 </head>
 <body>
 
-  <!-- Nút Menu Bật/Tắt Sidebar -->
-  <button class="menu-btn" onclick="toggleSidebar()">☰ MENU</button>
+  <!-- Cụm nút nổi trên màn hình -->
+  <div class="floating-controls">
+    <button class="float-btn" onclick="openSidebar()" title="Mở menu">☰</button>
+    <button class="float-btn" onclick="toggleFullScreen()" title="Phóng to toàn màn hình">🔲</button>
+  </div>
+
+  <!-- Lớp phủ màn hình -->
+  <div class="overlay" id="pageOverlay" onclick="closeSidebar()"></div>
 
   <!-- Thanh điều hướng ẩn (Sidebar) -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <h3>Danh Sách Trang</h3>
-      <button class="btn-action btn-add" onclick="openModal()">+ THÊM</button>
-      <button class="btn-action btn-refresh" onclick="fetchData()">🔄 TẢI LẠI</button>
-      <button class="btn-action btn-close" onclick="toggleSidebar()">✖ ĐÓNG</button>
+      <div class="header-top">
+        <h3>Menu Trang</h3>
+        <button class="close-btn" onclick="closeSidebar()">✕</button>
+      </div>
+      <div class="action-buttons">
+        <button class="btn-action btn-add" onclick="openModal()">+ Thêm Mới</button>
+        <button class="btn-action btn-refresh" onclick="fetchData()">↻ Tải Lại</button>
+      </div>
     </div>
     <ul class="nav-list" id="navList">
-      <li class="loading-text" id="loadingMsg">Đang tải dữ liệu...</li>
+      <li class="loading-text">Đang tải dữ liệu...</li>
     </ul>
   </div>
 
   <!-- Khung nội dung Full Màn Hình -->
-  <div class="iframe-container">
-    <iframe id="contentFrame" src="" allowfullscreen></iframe>
+  <div class="iframe-container" id="containerScreen">
+    <span class="placeholder">Vui lòng chọn một trang từ menu...</span>
+    <iframe id="contentFrame" src="" allowfullscreen style="display: none;"></iframe>
   </div>
 
-  <!-- Popup Modal Thêm Trang Mới -->
+  <!-- Popup Form Thêm -->
   <div class="modal-overlay" id="addModal">
     <div class="modal">
       <h3>Thêm Trang Mới</h3>
-      <label>Tên trang:</label>
-      <input type="text" id="newName" placeholder="VD: Liên hệ">
-      <label>Đường dẫn (URL):</label>
-      <input type="url" id="newUrl" placeholder="VD: https://link-cua-ban.html">
+      <label>Tên hiển thị</label>
+      <input type="text" id="newName" placeholder="Nhập tên trang...">
+      <label>Đường dẫn (URL)</label>
+      <input type="url" id="newUrl" placeholder="https://...">
       <div class="modal-actions">
-        <button class="btn-cancel" onclick="closeModal()">Hủy bỏ</button>
-        <button class="btn-save" id="btnSave" onclick="saveData()">Lưu vào Sheet</button>
+        <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+        <button class="btn-save" id="btnSave" onclick="saveData()">Lưu Lại</button>
       </div>
     </div>
   </div>
 
   <script>
-    // URL API của bạn
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzU2-uP0jUUia8w74BBQ7U78OUn3d_SE7cEd_LBZJbq2b2g4HCJyFRAOLKMU9p2zb0F/exec"; 
 
-    // Biến lưu trữ URL đang chọn (để phục vụ code sau này nếu cần copy)
-    let currentActiveUrl = "";
-
+    // Tự động mở menu và tải dữ liệu khi khởi động
+    openSidebar();
     fetchData();
 
-    // Hàm Bật/Tắt Sidebar
-    function toggleSidebar() {
-      const sidebar = document.getElementById("sidebar");
-      sidebar.classList.toggle("open");
+    // -- Chức năng Toàn Màn Hình (Fullscreen) --
+    function toggleFullScreen() {
+      const elem = document.documentElement;
+      if (!document.fullscreenElement) {
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { /* Safari */
+          elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { /* IE11 */
+          elem.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
     }
 
+    // -- Quản lý Sidebar --
+    function openSidebar() {
+      document.getElementById("sidebar").classList.add("open");
+      document.getElementById("pageOverlay").classList.add("show");
+    }
+
+    function closeSidebar() {
+      document.getElementById("sidebar").classList.remove("open");
+      document.getElementById("pageOverlay").classList.remove("show");
+    }
+
+    // -- Quản lý Form Thêm Mới --
+    function openModal() {
+      document.getElementById("newName").value = "";
+      document.getElementById("newUrl").value = "";
+      document.getElementById("addModal").style.display = "flex";
+      closeSidebar(); 
+    }
+
+    function closeModal() {
+      document.getElementById("addModal").style.display = "none";
+    }
+
+    // -- Lấy Dữ Liệu ("action": "get") --
     async function fetchData() {
       const navList = document.getElementById("navList");
-      navList.innerHTML = "<li class='loading-text'>Đang kết nối API...</li>";
+      navList.innerHTML = "<li class='loading-text'>Đang kết nối...</li>";
       
       try {
-        const requestPayload = {
-          "sheet": "Home",
-          "action": "get"
-        };
-
+        const requestPayload = { "sheet": "Home", "action": "get" };
         const response = await fetch(SCRIPT_URL, {
             method: "POST",
-            headers: {
-              "Content-Type": "text/plain;charset=utf-8"
-            },
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(requestPayload),
             redirect: "follow"
         });
@@ -139,7 +211,7 @@
         const data = await response.json();
         
         if (data.status !== "success") {
-          navList.innerHTML = `<li class='loading-text' style='color:#ff7675;'>Lỗi Sheet: ${data.message || 'Không xác định'}</li>`;
+          navList.innerHTML = `<li class='loading-text' style='color:#e74c3c;'>Lỗi: ${data.message || 'Không xác định'}</li>`;
           return;
         }
         
@@ -154,15 +226,16 @@
         
         renderNavigation(pages);
       } catch (error) {
-        navList.innerHTML = "<li class='loading-text' style='color:#ff7675;'>Lỗi kết nối mạng.</li>";
+        navList.innerHTML = "<li class='loading-text' style='color:#e74c3c;'>Lỗi kết nối mạng.</li>";
       }
     }
 
+    // -- Vẽ Menu --
     function renderNavigation(pages) {
       const navList = document.getElementById("navList");
       navList.innerHTML = ""; 
       if(pages.length === 0) {
-         navList.innerHTML = "<li class='loading-text'>Sheet 'Home' đang trống</li>";
+         navList.innerHTML = "<li class='loading-text'>Danh sách trống</li>";
          return;
       }
       pages.forEach(page => {
@@ -174,29 +247,22 @@
       });
     }
 
-    // Cập nhật iframe và Tự động ẩn Sidebar khi chọn trang
+    // -- Hiển thị Web --
     function loadWebPage(url, element) {
       document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
       element.classList.add("active");
       
-      currentActiveUrl = url;
-      document.getElementById("contentFrame").src = url;
+      const iframe = document.getElementById("contentFrame");
+      const placeholder = document.querySelector(".placeholder");
       
-      // Đóng menu sau khi chọn để không che màn hình web
-      toggleSidebar(); 
+      placeholder.style.display = "none";
+      iframe.src = url;
+      iframe.style.display = "block";
+      
+      closeSidebar(); 
     }
 
-    function openModal() {
-      document.getElementById("newName").value = "";
-      document.getElementById("newUrl").value = "";
-      document.getElementById("addModal").style.display = "flex";
-      toggleSidebar(); // Ẩn sidebar khi mở form thêm
-    }
-
-    function closeModal() {
-      document.getElementById("addModal").style.display = "none";
-    }
-
+    // -- Thêm Dữ Liệu ("action": "add") --
     async function saveData() {
       const name = document.getElementById("newName").value.trim();
       const url = document.getElementById("newUrl").value.trim();
@@ -210,7 +276,7 @@
       try {
         const savePayload = { 
           "sheet": "Home", 
-          "action": "post", 
+          "action": "add", 
           "A": name, 
           "B": url 
         };
@@ -223,19 +289,18 @@
         });
 
         const result = await response.json();
-        if (result.status === "success") {
-          alert("Thêm dữ liệu thành công!");
+        
+        if (result.status === "success" || result.message === "Thành công") {
           closeModal();
-          // Bật lại sidebar và load lại dữ liệu
-          toggleSidebar();
+          openSidebar();
           fetchData(); 
         } else {
-          alert("Lỗi từ server: " + (result.message || "Không xác định"));
+          alert("Lỗi từ máy chủ: " + (result.message || "Không xác định"));
         }
       } catch (error) {
-        alert("Lỗi khi Lưu. Xin hãy thử lại!");
+        alert("Lỗi kết nối. Xin hãy thử lại!");
       } finally {
-        btnSave.textContent = "Lưu vào Sheet";
+        btnSave.textContent = "Lưu Lại";
         btnSave.disabled = false;
       }
     }
