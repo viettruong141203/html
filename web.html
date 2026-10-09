@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trình Duyệt & Mã Nhúng</title>
+  <style>
+    body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; overflow: hidden; background-color: #f5f6fa; }
+    .sidebar { width: 280px; background-color: #2f3640; color: white; display: flex; flex-direction: column; z-index: 10; }
+    .sidebar-header { padding: 15px 20px; background-color: #272d35; display: flex; justify-content: space-between; align-items: center; }
+    .sidebar-header span { font-size: 16px; font-weight: bold; text-transform: uppercase; }
+    .btn-add { background-color: #e1b12c; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; }
+    .btn-add:hover { background-color: #c89c25; }
+    .nav-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1; }
+    .nav-item { padding: 15px 20px; border-bottom: 1px solid #353b48; cursor: pointer; transition: all 0.2s ease; font-size: 15px; }
+    .nav-item:hover { background-color: #0097e6; padding-left: 25px; }
+    .nav-item.active { background-color: #00a8ff; border-left: 4px solid #fff; }
+    
+    .main-content { flex: 1; display: flex; flex-direction: column; }
+    .top-bar { padding: 15px 20px; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; z-index: 5; }
+    .top-bar h3 { margin: 0; color: #2f3640; font-size: 18px; white-space: nowrap; }
+    .url-display { flex: 1; margin: 0 20px; padding: 8px 12px; font-family: monospace; color: #555; background: #f1f2f6; border: 1px solid #dcdde1; border-radius: 4px; }
+    .btn-copy { padding: 10px 18px; background-color: #4cd137; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-copy:hover { background-color: #44bd32; }
+    .iframe-container { flex: 1; background-color: #dcdde1; }
+    iframe { width: 100%; height: 100%; border: none; background: white;}
+    .loading-text { padding: 20px; text-align: center; color: #7f8fa6; font-style: italic; }
+
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 100; }
+    .modal { background: #fff; padding: 25px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    .modal h3 { margin-top: 0; margin-bottom: 20px; color: #333; text-align: center; }
+    .modal label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; font-size: 14px;}
+    .modal input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    .modal-actions { display: flex; justify-content: space-between; gap: 10px;}
+    .btn-save { flex: 1; padding: 10px; background: #0097e6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;}
+    .btn-save:hover { background: #007bb5; }
+    .btn-cancel { flex: 1; padding: 10px; background: #e84118; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;}
+    .btn-cancel:hover { background: #c23616; }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span>Danh Sách Trang</span>
+      <button class="btn-add" onclick="openModal()">+ THÊM</button>
+    </div>
+    <ul class="nav-list" id="navList">
+      <li class="loading-text" id="loadingMsg">Đang tải dữ liệu...</li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <h3 id="currentPageName">Vui lòng chọn trang</h3>
+      <input type="text" id="currentUrl" class="url-display" readonly placeholder="Link trang sẽ hiển thị ở đây...">
+      <button class="btn-copy" onclick="copyEmbedCode()">Sao chép mã Iframe</button>
+    </div>
+    <div class="iframe-container">
+      <iframe id="contentFrame" src="" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="addModal">
+    <div class="modal">
+      <h3>Thêm Trang Mới</h3>
+      <label>Tên trang:</label>
+      <input type="text" id="newName" placeholder="VD: Liên hệ">
+      <label>Đường dẫn (URL):</label>
+      <input type="url" id="newUrl" placeholder="VD: https://link-cua-ban.html">
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Hủy bỏ</button>
+        <button class="btn-save" id="btnSave" onclick="saveData()">Lưu vào Sheet Data</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzYtrzkbXMDIkzagqbIRHB1ZOV76GDO8On_Q5SrDC_5Nqt_Dzo6k8MWdvRRD0kYCZsI/exec"; 
+
+    document.addEventListener("DOMContentLoaded", fetchData);
+
+    async function fetchData() {
+      const navList = document.getElementById("navList");
+      navList.innerHTML = "<li class='loading-text'>Đang tải dữ liệu...</li>";
+      try {
+        const response = await fetch(SCRIPT_URL);
+        const data = await response.json();
+        
+        if (data.error) {
+          navList.innerHTML = `<li class='loading-text' style='color:red;'>Lỗi: ${data.error}</li>`;
+          return;
+        }
+        
+        renderNavigation(data);
+      } catch (error) {
+        navList.innerHTML = "<li class='loading-text' style='color:red;'>Lỗi tải dữ liệu.</li>";
+      }
+    }
+
+    function renderNavigation(pages) {
+      const navList = document.getElementById("navList");
+      navList.innerHTML = ""; 
+      if(pages.length === 0) {
+         navList.innerHTML = "<li class='loading-text'>Chưa có dữ liệu</li>";
+         return;
+      }
+      pages.forEach(page => {
+        const li = document.createElement("li");
+        li.className = "nav-item";
+        li.textContent = page.name;
+        li.onclick = () => loadWebPage(page.name, page.url, li);
+        navList.appendChild(li);
+      });
+    }
+
+    function loadWebPage(name, url, element) {
+      document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
+      element.classList.add("active");
+      document.getElementById("currentPageName").textContent = name;
+      document.getElementById("currentUrl").value = url;
+      document.getElementById("contentFrame").src = url;
+    }
+
+    function copyEmbedCode() {
+      const url = document.getElementById("currentUrl").value;
+      if (!url) return alert("Vui lòng chọn trang trước!");
+      const embedCode = `<iframe src="${url}" width="100%" height="600px" style="border:none;" allowfullscreen></iframe>`;
+      navigator.clipboard.writeText(embedCode).then(() => alert("Đã sao chép mã nhúng!"));
+    }
+
+    function openModal() {
+      document.getElementById("newName").value = "";
+      document.getElementById("newUrl").value = "";
+      document.getElementById("addModal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("addModal").style.display = "none";
+    }
+
+    async function saveData() {
+      const name = document.getElementById("newName").value.trim();
+      const url = document.getElementById("newUrl").value.trim();
+      const btnSave = document.getElementById("btnSave");
+
+      if (!name || !url) return alert("Vui lòng nhập đủ Tên trang và URL!");
+
+      btnSave.textContent = "Đang lưu...";
+      btnSave.disabled = true;
+
+      const payload = { name: name, url: url };
+
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        
+        if (result.status === "success") {
+          alert("Thêm thành công!");
+          closeModal();
+          fetchData(); 
+        } else {
+          alert("Lỗi từ server: " + result.message);
+        }
+      } catch (error) {
+        alert("Lỗi kết nối: " + error);
+      } finally {
+        btnSave.textContent = "Lưu vào Sheet Data";
+        btnSave.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
