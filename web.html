@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Danh sách</title>
+  <title>Trình Duyệt Web Toàn Màn Hình</title>
   <style>
     :root {
       --bg-sidebar: rgba(24, 28, 33, 0.95);
@@ -18,21 +18,33 @@
     .iframe-container span.placeholder { font-size: 16px; font-style: italic; opacity: 0.7; }
     iframe { width: 100%; height: 100%; border: none; background: #fff; position: relative; z-index: 2;}
 
-    /* Cụm nút bấm nổi ở góc (Menu và Toàn màn hình) */
+    /* Cụm 2 icon nổi dạng SVG (Trong suốt, không khung tròn) */
     .floating-controls {
       position: fixed; top: 20px; left: 20px; z-index: 100;
-      display: flex; gap: 10px;
+      display: flex; gap: 15px; align-items: center;
     }
 
     .float-btn {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: rgba(255, 255, 255, 0.9); color: #333;
-      display: flex; justify-content: center; align-items: center;
-      font-size: 20px; cursor: pointer; border: none;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      backdrop-filter: blur(4px); transition: all 0.2s ease;
+      background: none; border: none; padding: 0; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.25s ease;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); /* Đổ bóng giúp icon nổi bật trên mọi nền */
     }
-    .float-btn:hover { background: #fff; transform: scale(1.05); }
+
+    .float-btn svg {
+      width: 26px; height: 26px;
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.85); /* Màu trắng mờ tinh tế */
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: all 0.25s ease;
+    }
+    
+    .float-btn:hover svg { 
+      stroke: #3498db; /* Đổi sang màu xanh khi rê chuột */
+      transform: scale(1.15); 
+    }
 
     /* Lớp phủ làm tối màn hình khi mở menu */
     .overlay {
@@ -95,10 +107,16 @@
 </head>
 <body>
 
-  <!-- Cụm nút nổi trên màn hình -->
+  <!-- Cụm 2 icon SVG cao cấp, trong suốt -->
   <div class="floating-controls">
-    <button class="float-btn" onclick="openSidebar()" title="Mở menu">☰</button>
-    <button class="float-btn" onclick="toggleFullScreen()" title="Phóng to toàn màn hình">🔲</button>
+    <!-- Icon Menu (3 gạch ngang mềm mại) -->
+    <button class="float-btn" onclick="openSidebar()" title="Mở menu">
+      <svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <!-- Icon Phóng to toàn màn hình (Khung mở rộng) -->
+    <button class="float-btn" onclick="toggleFullScreen()" title="Phóng to toàn màn hình">
+      <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+    </button>
   </div>
 
   <!-- Lớp phủ màn hình -->
@@ -145,11 +163,9 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzU2-uP0jUUia8w74BBQ7U78OUn3d_SE7cEd_LBZJbq2b2g4HCJyFRAOLKMU9p2zb0F/exec"; 
 
-    // Tự động mở menu và tải dữ liệu khi khởi động
     openSidebar();
     fetchData();
 
-    // -- Chức năng Toàn Màn Hình (Fullscreen) --
     function toggleFullScreen() {
       const elem = document.documentElement;
       if (!document.fullscreenElement) {
@@ -171,7 +187,6 @@
       }
     }
 
-    // -- Quản lý Sidebar --
     function openSidebar() {
       document.getElementById("sidebar").classList.add("open");
       document.getElementById("pageOverlay").classList.add("show");
@@ -182,7 +197,6 @@
       document.getElementById("pageOverlay").classList.remove("show");
     }
 
-    // -- Quản lý Form Thêm Mới --
     function openModal() {
       document.getElementById("newName").value = "";
       document.getElementById("newUrl").value = "";
@@ -194,7 +208,6 @@
       document.getElementById("addModal").style.display = "none";
     }
 
-    // -- Lấy Dữ Liệu ("action": "get") --
     async function fetchData() {
       const navList = document.getElementById("navList");
       navList.innerHTML = "<li class='loading-text'>Đang kết nối...</li>";
@@ -230,7 +243,6 @@
       }
     }
 
-    // -- Vẽ Menu --
     function renderNavigation(pages) {
       const navList = document.getElementById("navList");
       navList.innerHTML = ""; 
@@ -247,7 +259,6 @@
       });
     }
 
-    // -- Hiển thị Web --
     function loadWebPage(url, element) {
       document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
       element.classList.add("active");
@@ -262,7 +273,6 @@
       closeSidebar(); 
     }
 
-    // -- Thêm Dữ Liệu ("action": "add") --
     async function saveData() {
       const name = document.getElementById("newName").value.trim();
       const url = document.getElementById("newUrl").value.trim();
