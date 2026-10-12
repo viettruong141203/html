@@ -2,519 +2,422 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="page-title">Cổng Thanh Toán</title>
-    <link id="favicon" rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
-    
-    <!-- Thư viện html2canvas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apps Script Chat - JSON Response Formatter</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
+        :root {
+            --primary: #0078FF;
+            --bg-color: #F0F2F5;
+            --chat-bg: #FFFFFF;
+            --text-dark: #1C1E21;
+            --text-light: #606770;
+            --border-radius: 12px;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100dvh; 
-            overflow: hidden;
-            padding: 16px;
-            text-rendering: geometricPrecision; /* Tối ưu độ nét của chữ */
-            -webkit-font-smoothing: antialiased;
+            height: 100vh;
         }
 
-        .main-container {
+        .chat-container {
             width: 100%;
-            max-width: 380px;
-            max-height: 100%;
+            max-width: 650px;
+            height: 92vh;
+            background-color: var(--chat-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            z-index: 10;
-        }
-
-        /* ----- Thẻ Card Chính ----- */
-        .payment-card {
-            background: rgba(30, 41, 59, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 24px;
-            padding: 24px 20px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            animation: fadeUp 0.5s ease-out;
-            overflow-y: auto;
-            max-height: 95dvh;
+            overflow: hidden;
             position: relative;
         }
 
-        .payment-card::-webkit-scrollbar { width: 0px; }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ----- Logo Phóng to ----- */
-        .top-logo-container {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-        }
-
-        .bank-logo {
-            width: auto;
-            max-width: 200px; 
-            height: auto;
-            max-height: 65px; 
-            object-fit: contain;
-            display: none; 
-            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5)); 
-            image-rendering: high-quality;
-            image-rendering: -webkit-optimize-contrast; /* Chống mờ ảnh tĩnh */
-        }
-
-        /* ----- QR Code ----- */
-        .qr-wrapper {
-            background: #ffffff;
-            padding: 10px;
-            border-radius: 18px;
-            margin-bottom: 24px;
-            width: 200px;
-            height: 200px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            flex-shrink: 0;
-        }
-
-        .qr-image {
-            width: 100%;
-            height: 100%;
-            border-radius: 10px;
-            object-fit: cover;
-            display: none;
-            image-rendering: high-quality;
-            image-rendering: -webkit-optimize-contrast;
-        }
-
-        /* ----- Danh Sách Thông Tin ----- */
-        .info-list {
-            width: 100%;
+        .header {
+            padding: 12px 15px;
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .info-item {
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 14px;
-            padding: 12px 16px;
+        .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.03);
         }
 
-        .info-text {
+        .header-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .header-actions {
             display: flex;
-            flex-direction: column;
-            gap: 3px;
+            gap: 6px;
         }
 
-        .info-label {
-            color: #94a3b8;
+        .btn {
+            background-color: #e4e6eb;
+            color: var(--text-dark);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
             font-size: 12px;
             font-weight: 500;
+            transition: 0.2s;
         }
 
-        .info-value {
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 15px;
-            letter-spacing: 0.2px;
+        .btn:hover {
+            background-color: #d8dadf;
         }
 
-        .btn-copy {
-            background: transparent;
-            border: none;
-            color: #64748b;
-            cursor: pointer;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .btn-danger {
+            background-color: #ff4d4f;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #e04345;
         }
 
-        /* ----- Nút Hành Động ----- */
-        .action-buttons {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-top: 20px;
-            gap: 10px;
-            flex-shrink: 0;
+        .header input {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
         }
 
-        .btn-action {
+        .chat-window {
             flex: 1;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            color: #ffffff;
-            border-radius: 12px;
-            padding: 12px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-
-        .btn-action:active { background: rgba(255, 255, 255, 0.15); }
-        .btn-action svg { width: 18px; height: 18px; }
-
-        /* ----- Loading & Error ----- */
-        #loading {
-            text-align: center;
-            color: #94a3b8;
-            font-size: 14px;
-            font-weight: 500;
+            padding: 20px;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 12px;
+            gap: 15px;
+            background-color: #f9f9f9;
         }
-        
-        .spinner {
-            width: 24px; height: 24px;
-            border: 2px solid rgba(255,255,255,0.1);
-            border-top-color: #38bdf8;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
-        #error {
-            text-align: center;
-            padding: 16px;
-            color: #f87171;
-            font-weight: 500;
-            display: none;
-            background: rgba(248, 113, 113, 0.1);
-            border-radius: 12px;
-            border: 1px solid rgba(248, 113, 113, 0.2);
+        .message {
+            max-width: 90%;
+            padding: 12px 16px;
+            border-radius: 18px;
             font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            white-space: pre-wrap;
         }
 
-        #content-wrapper { display: none; width: 100%; }
-        svg { fill: currentColor; }
+        .message.user {
+            align-self: flex-end;
+            background-color: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
 
-        /* ---------------- Modal & Toast ---------------- */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
-            z-index: 999; justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 0.3s ease;
+        /* Phản hồi của Bot được định dạng màu và font lập trình cho JSON chuẩn đẹp */
+        .message.bot {
+            align-self: flex-start;
+            background-color: #282c34; 
+            color: #abb2bf; 
+            border-bottom-left-radius: 4px;
+            font-family: monospace; 
         }
-        .modal-content {
-            background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px; padding: 24px; width: 90%; max-width: 340px;
-            position: relative; transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+        .message.error {
+            background-color: #ffe6e6;
+            color: #d93025;
+            font-family: sans-serif;
         }
-        .modal-overlay.active { display: flex; opacity: 1; }
-        .modal-overlay.active .modal-content { transform: scale(1); }
-        .close-btn {
-            position: absolute; top: 16px; right: 16px; color: #94a3b8; cursor: pointer;
-            width: 24px; height: 24px; display: flex; justify-content: center; align-items: center;
+
+        /* Bảng chọn lịch sử tin nhắn đã gửi (Gọn gàng) */
+        .history-dropdown {
+            position: absolute;
+            bottom: 75px;
+            left: 15px;
+            right: 15px;
+            max-height: 250px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+            padding: 10px;
         }
-        .modal-title { color: #f8fafc; font-size: 16px; font-weight: 600; margin-bottom: 16px; text-align: center; }
-        .guide-steps { list-style: none; }
-        .guide-steps li { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: 13px; line-height: 1.5; color: #cbd5e1; display: flex; align-items: flex-start; gap: 10px; }
-        .guide-steps li .step-num { background: #f8fafc; color: #0f172a; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; margin-top: 1px; }
-        
-        .toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(30px);
-            background: #f8fafc; color: #0f172a; padding: 10px 20px; border-radius: 30px;
-            font-size: 13px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 1000;
+
+        .history-dropdown-header {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--text-light);
+            margin-bottom: 8px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
         }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        .history-item {
+            padding: 8px 10px;
+            background: #f4f6f8;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: pre-wrap;
+            word-break: break-all;
+            transition: 0.2s;
+            font-family: monospace;
+        }
+
+        .history-item:hover {
+            background: #e4e6eb;
+        }
+
+        /* Khu vực nhập liệu */
+        .input-area {
+            padding: 12px 15px;
+            background-color: #fff;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            position: relative;
+        }
+
+        .input-area textarea {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            resize: none;
+            font-family: inherit;
+            font-size: 14px;
+            max-height: 150px;
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+
+        .input-area button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            transition: 0.2s;
+        }
+
+        .input-area button:hover {
+            background-color: #0065D1;
+        }
+
+        .input-area button svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
     </style>
 </head>
 <body>
 
-    <div class="main-container">
-        <div id="loading"><div class="spinner"></div>Đang tải dữ liệu...</div>
-        <div id="error"></div>
+    <div class="chat-container">
+        <!-- Bảng chọn nhanh lịch sử dạng ẩn hiện gọn gàng -->
+        <div class="history-dropdown" id="historyDropdown">
+            <div class="history-dropdown-header">
+                <span>Chọn mẫu tin nhắn đã gửi trước đó:</span>
+                <span style="cursor:pointer; color: red;" onclick="toggleHistoryMenu()">✕ Đóng</span>
+            </div>
+            <div id="historyListContainer"></div>
+        </div>
 
-        <div id="content-wrapper">
-            <div class="payment-card" id="capture-card">
-                <div class="top-logo-container">
-                    <img id="bank-logo" class="bank-logo" src="" alt="Bank Logo" crossorigin="anonymous">
-                </div>
-                
-                <div class="qr-wrapper">
-                    <img id="qr-image" class="qr-image" src="" alt="Mã QR" crossorigin="anonymous">
-                </div>
-
-                <div class="info-list">
-                    <div class="info-item">
-                        <div class="info-text">
-                            <span class="info-label">Ngân hàng</span>
-                            <span class="info-value" id="bank-name">---</span>
-                        </div>
-                        <button class="btn-copy" onclick="copyText('bank-name')">
-                            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-                        </button>
-                    </div>
-
-                    <div class="info-item">
-                        <div class="info-text">
-                            <span class="info-label">Số tài khoản</span>
-                            <span class="info-value" id="acc-number">---</span>
-                        </div>
-                        <button class="btn-copy" onclick="copyText('acc-number')">
-                            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-                        </button>
-                    </div>
-
-                    <div class="info-item">
-                        <div class="info-text">
-                            <span class="info-label">Chủ tài khoản</span>
-                            <span class="info-value" id="acc-owner">---</span>
-                        </div>
-                        <button class="btn-copy" onclick="copyText('acc-owner')">
-                            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="action-buttons" id="action-buttons">
-                    <button class="btn-action" onclick="downloadImage()">
-                        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-                        Lưu Mã
-                    </button>
-                    <button class="btn-action" onclick="openModal()">
-                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
-                        Hướng Dẫn
-                    </button>
+        <div class="header">
+            <div class="header-top">
+                <span class="header-title">Apps Script API JSON Formatter</span>
+                <div class="header-actions">
+                    <button class="btn" onclick="toggleHistoryMenu()">📂 Mẫu cũ</button>
+                    <button class="btn btn-danger" onclick="clearHistory()">Xóa lịch sử</button>
                 </div>
             </div>
+            <input type="text" id="apiUrl" placeholder="Dán URL Web App Apps Script vào đây..." onchange="saveConfig()">
+        </div>
+
+        <div class="chat-window" id="chatWindow"></div>
+
+        <div class="input-area">
+            <textarea id="messageInput" placeholder="Nhập nội dung hoặc JSON... Nhấn Shift+Enter để xuống dòng." rows="1" oninput="autoResizeTextarea(this)" onkeydown="handleEnter(event)"></textarea>
+            <button onclick="sendMessage()">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+            </button>
         </div>
     </div>
-
-    <!-- Modal Hướng Dẫn -->
-    <div id="guideModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">
-                <svg viewBox="0 0 24 24" width="24" height="24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-            </span>
-            <h3 class="modal-title">Hướng Dẫn Quét Mã</h3>
-            <ul class="guide-steps">
-                <li><div class="step-num">1</div><div>Bấm <strong>Lưu Mã</strong> để tải ảnh hóa đơn về.</div></li>
-                <li><div class="step-num">2</div><div>Mở ứng dụng <strong>Ngân hàng</strong> hoặc Ví điện tử.</div></li>
-                <li><div class="step-num">3</div><div>Chọn tính năng <strong>Quét mã QR</strong>.</div></li>
-                <li><div class="step-num">4</div><div>Chọn tải lên ảnh từ <strong>Thư viện</strong>.</div></li>
-                <li><div class="step-num">5</div><div>Kiểm tra thông tin và hoàn tất thanh toán.</div></li>
-            </ul>
-        </div>
-    </div>
-
-    <div id="toast" class="toast">Đã sao chép!</div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const transactionId = urlParams.get('id') || 'BK926295'; 
-        const webhookUrl = "https://script.google.com/macros/s/AKfycbzgeZU6ik9YDR8_dmP8cqsjlWOVyW-lX9J_mMGVONdSZnzhr_tj7UoRlKJTMz-TQYSYfg/exec";
+        const chatWindow = document.getElementById('chatWindow');
+        const messageInput = document.getElementById('messageInput');
+        const apiUrlInput = document.getElementById('apiUrl');
+        const historyDropdown = document.getElementById('historyDropdown');
+        const historyListContainer = document.getElementById('historyListContainer');
+        
+        let chatHistory = [];
+        let sentMessagesList = [];
 
-        function blobToBase64(blob) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
+        window.onload = function() {
+            const savedUrl = localStorage.getItem('appsScriptUrl');
+            if (savedUrl) apiUrlInput.value = savedUrl;
+
+            const savedHistory = localStorage.getItem('chatHistoryJsonV4');
+            if (savedHistory) {
+                chatHistory = JSON.parse(savedHistory);
+                renderHistory();
+            } else {
+                appendMessage('bot', '{\n  "status": "ready",\n  "message": "Sẵn sàng nhận dữ liệu và chuyển về định dạng JSON."\n}');
+            }
+
+            const savedSent = localStorage.getItem('sentMessagesListV4');
+            if (savedSent) {
+                sentMessagesList = JSON.parse(savedSent);
+            }
+        };
+
+        function saveConfig() { localStorage.setItem('appsScriptUrl', apiUrlInput.value.trim()); }
+        
+        function saveHistory() { 
+            localStorage.setItem('chatHistoryJsonV4', JSON.stringify(chatHistory)); 
+            localStorage.setItem('sentMessagesListV4', JSON.stringify(sentMessagesList));
+        }
+
+        function clearHistory() {
+            if(confirm('Xóa toàn bộ lịch sử trò chuyện và mẫu đã gửi?')) {
+                chatHistory = [];
+                sentMessagesList = [];
+                saveHistory();
+                chatWindow.innerHTML = '';
+                historyDropdown.style.display = 'none';
+            }
+        }
+
+        function toggleHistoryMenu() {
+            if (historyDropdown.style.display === 'block') {
+                historyDropdown.style.display = 'none';
+            } else {
+                renderHistoryDropdownList();
+                historyDropdown.style.display = 'block';
+            }
+        }
+
+        function renderHistoryDropdownList() {
+            historyListContainer.innerHTML = '';
+            if (sentMessagesList.length === 0) {
+                historyListContainer.innerHTML = '<div style="padding: 10px; color: #777; font-size: 13px;">Chưa có tin nhắn nào được gửi.</div>';
+                return;
+            }
+
+            const recentMsgs = [...sentMessagesList].reverse();
+            recentMsgs.forEach(msg => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.textContent = msg;
+                item.onclick = () => {
+                    messageInput.value = msg;
+                    autoResizeTextarea(messageInput);
+                    historyDropdown.style.display = 'none';
+                    messageInput.focus();
+                };
+                historyListContainer.appendChild(item);
             });
         }
 
-        async function getSafeBase64(url) {
-            try {
-                const fetchUrl = url + (url.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
-                const res = await fetch(fetchUrl, { mode: 'cors' });
-                if (res.ok) {
-                    const blob = await res.blob();
-                    return await blobToBase64(blob);
-                }
-            } catch(e) {}
-            
-            try {
-                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-                const res = await fetch(proxyUrl, { mode: 'cors' });
-                if (res.ok) {
-                    const blob = await res.blob();
-                    return await blobToBase64(blob);
-                }
-            } catch(e) {}
-            
-            return url; 
+        function autoResizeTextarea(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
         }
 
-        function setFavicon(url) {
-            let link = document.querySelector("link[rel~='icon']");
-            if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
-            link.type = 'image/png'; link.href = url;
+        function handleEnter(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
         }
 
-        async function fetchQRCode() {
+        function appendMessage(sender, text, isError = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender} ${isError ? 'error' : ''}`;
+            msgDiv.textContent = text;
+            chatWindow.appendChild(msgDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function renderHistory() {
+            chatWindow.innerHTML = '';
+            chatHistory.forEach(msg => appendMessage(msg.sender, msg.text, msg.isError));
+        }
+
+        async function sendMessage() {
+            const exactText = messageInput.value;
+            const url = apiUrlInput.value.trim();
+
+            if (!exactText.trim()) return;
+            if (!url) { alert("Vui lòng nhập URL Apps Script trước!"); return; }
+
+            historyDropdown.style.display = 'none';
+
+            if (!sentMessagesList.includes(exactText)) {
+                sentMessagesList.push(exactText);
+            }
+
+            appendMessage('user', exactText);
+            chatHistory.push({ sender: 'user', text: exactText });
+            
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            saveHistory();
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
             try {
-                const response = await fetch(webhookUrl, {
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ sheet: "Ngân hàng", action: "check", id: transactionId })
+                    body: exactText
                 });
 
-                const result = await response.json();
-
-                if (result.success && result.data) {
-                    const data = result.data;
-                    document.getElementById('page-title').innerText = data.bankName + " - Thanh toán";
-
-                    document.getElementById('bank-name').innerText = data.bankName;
-                    document.getElementById('acc-number').innerText = data.accNumber;
-                    document.getElementById('acc-owner').innerText = data.accOwner;
-                    
-                    const qrUrl = `https://img.vietqr.io/image/${data.bin}-${data.accNumber}-qr_only.png`;
-                    const qrSafeUrl = await getSafeBase64(qrUrl);
-                    const qrImg = document.getElementById('qr-image');
-                    qrImg.onload = () => { qrImg.style.display = 'block'; };
-                    qrImg.src = qrSafeUrl;
-                    
-                    if(data.logo) {
-                        const logoSafeUrl = await getSafeBase64(data.logo);
-                        const logoImg = document.getElementById('bank-logo');
-                        logoImg.onload = () => { logoImg.style.display = 'block'; };
-                        logoImg.onerror = () => { logoImg.style.display = 'none'; };
-                        logoImg.src = logoSafeUrl;
-                        setFavicon(logoSafeUrl);
-                    }
-
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('content-wrapper').style.display = 'block';
-
-                } else {
-                    showError("Không tìm thấy thông tin giao dịch.");
+                const responseText = await response.text();
+                
+                // TỰ ĐỘNG CHUYỂN ĐỔI PHẢN HỒI THÀNH DẠNG JSON CÓ THỤT LỀ VÀ XUỐNG DÒNG
+                let formattedJsonText = responseText;
+                try {
+                    const jsonObject = JSON.parse(responseText);
+                    formattedJsonText = JSON.stringify(jsonObject, null, 2); // Thụt lề 2 khoảng trắng
+                } catch (e) {
+                    // Nếu phản hồi không phải dạng JSON hợp lệ thì giữ nguyên văn bản thô
                 }
+
+                appendMessage('bot', formattedJsonText);
+                chatHistory.push({ sender: 'bot', text: formattedJsonText });
+
             } catch (error) {
-                showError("Lỗi kết nối máy chủ. Vui lòng thử lại sau.");
-            }
-        }
-
-        function showError(msg) {
-            document.getElementById('loading').style.display = 'none';
-            const errEl = document.getElementById('error');
-            errEl.style.display = 'block';
-            errEl.innerText = msg;
-        }
-
-        let toastTimeout;
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.innerText = message;
-            toast.classList.add('show');
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 2500); 
-        }
-
-        function copyText(elementId) {
-            navigator.clipboard.writeText(document.getElementById(elementId).innerText).then(() => {
-                showToast("Đã sao chép thành công"); 
-            });
-        }
-
-        // ----- FIX LỖI MỜ ẢNH VÀ XÁM NỀN HOÀN CHỈNH -----
-        async function downloadImage() {
-            showToast("Đang tạo ảnh hóa đơn siêu nét...");
-            const card = document.getElementById('capture-card');
-            const buttons = document.getElementById('action-buttons');
-            const copyIcons = document.querySelectorAll('.btn-copy');
-
-            const origBg = card.style.background;
-            const origBackdrop = card.style.backdropFilter;
-            const origWebkitBackdrop = card.style.webkitBackdropFilter;
-
-            // Ẩn nút bấm
-            buttons.style.display = 'none';
-            copyIcons.forEach(icon => icon.style.display = 'none');
-
-            // Tắt kính mờ, đổ nền cứng
-            card.style.background = '#1e293b'; 
-            card.style.backdropFilter = 'none';
-            card.style.webkitBackdropFilter = 'none';
-
-            try {
-                await new Promise(resolve => setTimeout(resolve, 200));
-
-                // Tính toán tỷ lệ pixel thiết bị, ép nhân 3 hoặc 4 để sắc nét tối đa
-                const devicePixelRatio = window.devicePixelRatio || 1;
-                const ultraScale = devicePixelRatio * 3; 
-
-                const canvas = await html2canvas(card, {
-                    backgroundColor: '#1e293b', 
-                    scale: ultraScale, 
-                    useCORS: true, 
-                    allowTaint: false,
-                    logging: false
-                });
-
-                // Xuất file chuẩn 100% Quality
-                const image = canvas.toDataURL("image/png", 1.0);
-                const link = document.createElement('a');
-                link.href = image;
-                link.download = `HoaDon_ThanhToan_${transactionId}.png`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                showToast("Đã lưu ảnh thành công!");
-            } catch (err) {
-                console.error(err);
-                showToast("Vui lòng chụp màn hình để lưu QR.");
+                const errorMsg = `Lỗi kết nối: ${error.message}`;
+                appendMessage('bot', errorMsg, true);
+                chatHistory.push({ sender: 'bot', text: errorMsg, isError: true });
             } finally {
-                // Khôi phục giao diện ban đầu
-                buttons.style.display = 'flex';
-                copyIcons.forEach(icon => icon.style.display = 'flex');
-                
-                card.style.background = origBg;
-                card.style.backdropFilter = origBackdrop;
-                card.style.webkitBackdropFilter = origWebkitBackdrop;
+                saveHistory();
             }
         }
-
-        const modal = document.getElementById('guideModal');
-        function openModal() { modal.classList.add('active'); }
-        function closeModal() { modal.classList.remove('active'); }
-        window.onclick = function(event) { if (event.target == modal) closeModal(); }
-
-        fetchQRCode();
     </script>
 </body>
 </html>
