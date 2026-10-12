@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apps Script API Chat</title>
+    <title>Apps Script API Chat - Compact Fit</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -15,8 +15,8 @@
             --border-color: #e5e7eb;
             --code-bg: #1e293b;
             --code-text: #e2e8f0;
-            --radius-lg: 16px;
-            --radius-md: 10px;
+            --radius-lg: 12px;
+            --radius-md: 8px;
         }
 
         * {
@@ -25,6 +25,7 @@
             padding: 0;
         }
 
+        /* Khóa toàn màn hình, không cho cuộn trang ngoài */
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: var(--bg-gradient);
@@ -32,38 +33,40 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            padding: 10px;
+            height: 100vh;
+            overflow: hidden;
+            padding: 6px;
         }
 
         @media (min-width: 768px) {
             body {
-                padding: 20px;
+                padding: 12px;
             }
         }
 
         .chat-container {
             width: 100%;
             max-width: 750px;
-            height: 95vh;
-            max-height: 900px;
+            height: 100%;
+            max-height: 850px;
             background-color: var(--chat-bg);
             border-radius: var(--radius-lg);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             overflow: hidden;
             position: relative;
         }
 
-        /* Header Style */
+        /* Header gọn gàng */
         .header {
-            padding: 14px 20px;
+            padding: 8px 14px;
             background-color: #ffffff;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 6px;
+            flex-shrink: 0;
         }
 
         .header-top {
@@ -75,23 +78,23 @@
         .header-title-wrapper {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .header-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 700;
             color: var(--text-main);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .header-title::before {
             content: '';
             display: inline-block;
-            width: 9px;
-            height: 9px;
+            width: 7px;
+            height: 7px;
             background-color: #22c55e;
             border-radius: 50%;
         }
@@ -100,9 +103,9 @@
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 18px;
-            padding: 4px;
-            border-radius: 6px;
+            font-size: 15px;
+            padding: 2px 4px;
+            border-radius: 4px;
             transition: background 0.2s;
             display: flex;
             align-items: center;
@@ -114,17 +117,17 @@
 
         .header-actions {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
         .btn {
             background-color: #f3f4f6;
             color: var(--text-secondary);
             border: 1px solid var(--border-color);
-            padding: 6px 12px;
+            padding: 4px 10px;
             border-radius: var(--radius-md);
             cursor: pointer;
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 500;
             transition: all 0.2s ease;
         }
@@ -147,25 +150,18 @@
         .api-config-panel {
             display: none;
             flex-direction: column;
-            gap: 6px;
-            animation: fadeIn 0.2s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
+            gap: 4px;
         }
 
         .api-config-panel input {
             width: 100%;
-            padding: 9px 12px;
+            padding: 6px 10px;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             outline: none;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-main);
             background-color: #f9fafb;
-            transition: border-color 0.2s;
         }
 
         .api-config-panel input:focus {
@@ -173,34 +169,34 @@
             background-color: #fff;
         }
 
-        /* Chat Window Style */
+        /* Khung chat chiếm tối đa không gian còn lại */
         .chat-window {
             flex: 1;
-            padding: 20px;
+            padding: 12px 14px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 10px;
             background-color: #fafafa;
         }
 
+        /* Giảm kích thước chữ tin nhắn xuống mức siêu gọn (11px) */
         .message {
-            max-width: 88%;
-            padding: 10px 14px;
-            border-radius: 12px;
-            line-height: 1.5;
+            max-width: 90%;
+            padding: 8px 12px;
+            border-radius: 10px;
+            line-height: 1.4;
             word-wrap: break-word;
             white-space: pre-wrap;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            /* Đã giảm kích thước chữ nhỏ gọn hơn */
-            font-size: 12px; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            font-size: 11px; 
         }
 
         .message.user {
             align-self: flex-end;
             background-color: var(--primary);
             color: white;
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 3px;
             font-family: ui-monospace, monospace;
         }
 
@@ -208,7 +204,7 @@
             align-self: flex-start;
             background-color: var(--code-bg);
             color: var(--code-text);
-            border-bottom-left-radius: 4px;
+            border-bottom-left-radius: 3px;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
 
@@ -222,32 +218,26 @@
         /* Dropdown lịch sử mẫu cũ */
         .history-dropdown {
             position: absolute;
-            bottom: 75px;
-            left: 15px;
-            right: 15px;
-            max-height: 280px;
+            bottom: 60px;
+            left: 10px;
+            right: 10px;
+            max-height: 200px;
             background: white;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 20px -4px rgba(0,0,0,0.15);
             overflow-y: auto;
             display: none;
             z-index: 100;
-            padding: 12px;
-            animation: slideUp 0.2s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(10px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            padding: 10px;
         }
 
         .history-dropdown-header {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 600;
             color: var(--text-secondary);
-            margin-bottom: 10px;
-            padding-bottom: 6px;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
@@ -255,15 +245,14 @@
         }
 
         .history-item {
-            padding: 8px 10px;
+            padding: 6px 8px;
             background: #f8fafc;
             border: 1px solid #f1f5f9;
-            border-radius: var(--radius-md);
-            margin-bottom: 8px;
-            font-size: 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 11px;
             cursor: pointer;
             word-break: break-all;
-            transition: 0.2s;
             font-family: ui-monospace, monospace;
         }
 
@@ -272,31 +261,32 @@
             border-color: #cbd5e1;
         }
 
-        /* Input Area Style */
+        /* Khu vực nhập liệu cố định gọn gàng bên dưới */
         .input-area {
-            padding: 14px 20px;
+            padding: 8px 14px;
             background-color: #ffffff;
             border-top: 1px solid var(--border-color);
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: flex-end;
+            flex-shrink: 0;
             position: relative;
         }
 
         .input-area textarea {
             flex: 1;
-            padding: 10px 14px;
+            padding: 8px 12px;
             border: 1px solid var(--border-color);
-            border-radius: 20px;
+            border-radius: 18px;
             outline: none;
             resize: none;
             font-family: inherit;
-            font-size: 14px;
-            max-height: 160px;
+            font-size: 12px;
+            max-height: 100px;
             overflow-y: auto;
-            line-height: 1.5;
+            line-height: 1.4;
             background-color: #f9fafb;
-            transition: border-color 0.2s, background-color 0.2s;
+            transition: border-color 0.2s;
         }
 
         .input-area textarea:focus {
@@ -309,8 +299,8 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 44px;
-            height: 44px;
+            width: 36px;
+            height: 36px;
             cursor: pointer;
             display: flex;
             justify-content: center;
@@ -323,13 +313,9 @@
             background-color: var(--primary-hover);
         }
 
-        .input-area button.send-btn:active {
-            transform: scale(0.95);
-        }
-
         .input-area button.send-btn svg {
-            width: 18px;
-            height: 18px;
+            width: 15px;
+            height: 15px;
             fill: white;
         }
     </style>
@@ -349,16 +335,15 @@
         <div class="header">
             <div class="header-top">
                 <div class="header-title-wrapper">
-                    <span class="header-title">Apps Script API Tester</span>
+                    <span class="header-title">Apps Script API</span>
                     <button class="settings-icon-btn" onclick="toggleApiPanel()" title="Cài đặt URL API">⚙️</button>
                 </div>
                 <div class="header-actions">
                     <button class="btn" onclick="toggleHistoryMenu()">📂 Mẫu cũ</button>
-                    <button class="btn btn-danger" onclick="clearHistory()">Xóa lịch sử</button>
+                    <button class="btn btn-danger" onclick="clearHistory()">Xóa</button>
                 </div>
             </div>
             
-            <!-- Phần nhập URL API ẩn/hiện gọn gàng bằng icon ⚙️ -->
             <div class="api-config-panel" id="apiConfigPanel">
                 <input type="text" id="apiUrl" placeholder="Dán URL Web App Apps Script vào đây (https://script.google.com/.../exec)" onchange="saveConfig()">
             </div>
@@ -367,7 +352,7 @@
         <div class="chat-window" id="chatWindow"></div>
 
         <div class="input-area">
-            <textarea id="messageInput" placeholder="" rows="1" oninput="autoResizeTextarea(this)" onkeydown="handleEnter(event)"></textarea>
+            <textarea id="messageInput" placeholder="Nhập nội dung hoặc JSON... (Shift+Enter xuống dòng)" rows="1" oninput="autoResizeTextarea(this)" onkeydown="handleEnter(event)"></textarea>
             <button class="send-btn" onclick="sendMessage()" title="Gửi tin nhắn">
                 <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
             </button>
@@ -393,15 +378,15 @@
                 apiConfigPanel.style.display = 'flex';
             }
 
-            const savedHistory = localStorage.getItem('chatHistoryJsonV7');
+            const savedHistory = localStorage.getItem('chatHistoryJsonV8');
             if (savedHistory) {
                 chatHistory = JSON.parse(savedHistory);
                 renderHistory();
             } else {
-                appendMessage('bot', '{\n  "status": "ready",\n  "message": "Giao diện đã sẵn sàng. Nhấn vào icon ⚙️ ở góc trên để dán URL API."\n}');
+                appendMessage('bot', '{\n  "status": "ready",\n  "message": "Sẵn sàng. Nhấn vào icon ⚙️ ở góc trên để dán URL API."\n}');
             }
 
-            const savedSent = localStorage.getItem('sentMessagesListV7');
+            const savedSent = localStorage.getItem('sentMessagesListV8');
             if (savedSent) {
                 sentMessagesList = JSON.parse(savedSent);
             }
@@ -419,8 +404,8 @@
         }
 
         function saveHistory() { 
-            localStorage.setItem('chatHistoryJsonV7', JSON.stringify(chatHistory)); 
-            localStorage.setItem('sentMessagesListV7', JSON.stringify(sentMessagesList));
+            localStorage.setItem('chatHistoryJsonV8', JSON.stringify(chatHistory)); 
+            localStorage.setItem('sentMessagesListV8', JSON.stringify(sentMessagesList));
         }
 
         function clearHistory() {
@@ -445,7 +430,7 @@
         function renderHistoryDropdownList() {
             historyListContainer.innerHTML = '';
             if (sentMessagesList.length === 0) {
-                historyListContainer.innerHTML = '<div style="padding: 12px; color: #6b7280; font-size: 13px; text-align: center;">Chưa có mẫu tin nhắn nào được lưu.</div>';
+                historyListContainer.innerHTML = '<div style="padding: 8px; color: #6b7280; font-size: 11px; text-align: center;">Chưa có mẫu tin nhắn nào được lưu.</div>';
                 return;
             }
 
@@ -466,7 +451,7 @@
 
         function autoResizeTextarea(textarea) {
             textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 160) + 'px';
+            textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
         }
 
         function handleEnter(e) {
