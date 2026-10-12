@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apps Script API Chat - Compact Fit</title>
+    <title>Apps Script API Tester - Compact Fit</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -180,7 +180,7 @@
             background-color: #fafafa;
         }
 
-        /* Giảm kích thước chữ tin nhắn xuống mức siêu gọn (11px) */
+        /* Cỡ chữ nhỏ gọn (11px), tối ưu hiển thị JSON */
         .message {
             max-width: 90%;
             padding: 8px 12px;
@@ -215,12 +215,12 @@
             font-family: sans-serif;
         }
 
-        /* Dropdown lịch sử mẫu cũ */
+        /* Dropdown lịch sử mẫu cũ nằm ngay góc dưới phía trên khung nhập */
         .history-dropdown {
             position: absolute;
             bottom: 60px;
-            left: 10px;
-            right: 10px;
+            left: 14px;
+            right: 60px;
             max-height: 200px;
             background: white;
             border: 1px solid var(--border-color);
@@ -267,7 +267,7 @@
             background-color: #ffffff;
             border-top: 1px solid var(--border-color);
             display: flex;
-            gap: 8px;
+            gap: 6px;
             align-items: flex-end;
             flex-shrink: 0;
             position: relative;
@@ -292,6 +292,25 @@
         .input-area textarea:focus {
             border-color: var(--primary);
             background-color: #fff;
+        }
+
+        /* Nút icon mở mẫu cũ nằm ngay chỗ nhập tin nhắn */
+        .icon-action-btn {
+            background: #f3f4f6;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+        .icon-action-btn:hover {
+            background-color: #e5e7eb;
         }
 
         .input-area button.send-btn {
@@ -323,7 +342,7 @@
 <body>
 
     <div class="chat-container">
-        <!-- Bảng chọn nhanh lịch sử mẫu cũ -->
+        <!-- Bảng chọn nhanh lịch sử mẫu cũ nằm gần khung nhập -->
         <div class="history-dropdown" id="historyDropdown">
             <div class="history-dropdown-header">
                 <span>Chọn mẫu tin nhắn đã gửi trước đó:</span>
@@ -339,8 +358,7 @@
                     <button class="settings-icon-btn" onclick="toggleApiPanel()" title="Cài đặt URL API">⚙️</button>
                 </div>
                 <div class="header-actions">
-                    <button class="btn" onclick="toggleHistoryMenu()">📂 Mẫu cũ</button>
-                    <button class="btn btn-danger" onclick="clearHistory()">Xóa</button>
+                    <button class="btn btn-danger" onclick="clearHistory()">Xóa lịch sử</button>
                 </div>
             </div>
             
@@ -352,7 +370,11 @@
         <div class="chat-window" id="chatWindow"></div>
 
         <div class="input-area">
+            <!-- Icon mẫu cũ đặt gọn gàng ở đây -->
+            <button class="icon-action-btn" onclick="toggleHistoryMenu()" title="Chọn mẫu tin nhắn đã gửi">📂</button>
+            
             <textarea id="messageInput" placeholder="Nhập nội dung hoặc JSON... (Shift+Enter xuống dòng)" rows="1" oninput="autoResizeTextarea(this)" onkeydown="handleEnter(event)"></textarea>
+            
             <button class="send-btn" onclick="sendMessage()" title="Gửi tin nhắn">
                 <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
             </button>
@@ -378,21 +400,31 @@
                 apiConfigPanel.style.display = 'flex';
             }
 
-            const savedHistory = localStorage.getItem('chatHistoryJsonV8');
+            const savedHistory = localStorage.getItem('chatHistoryJsonV10');
             if (savedHistory) {
-                chatHistory = JSON.parse(savedHistory);
-                renderHistory();
+                try {
+                    chatHistory = JSON.parse(savedHistory);
+                    renderHistory();
+                } catch (e) {
+                    chatHistory = [];
+                }
             } else {
                 appendMessage('bot', '{\n  "status": "ready",\n  "message": "Sẵn sàng. Nhấn vào icon ⚙️ ở góc trên để dán URL API."\n}');
             }
 
-            const savedSent = localStorage.getItem('sentMessagesListV8');
+            const savedSent = localStorage.getItem('sentMessagesListV10');
             if (savedSent) {
-                sentMessagesList = JSON.parse(savedSent);
+                try {
+                    sentMessagesList = JSON.parse(savedSent);
+                } catch (e) {
+                    sentMessagesList = [];
+                }
             }
         };
 
-        function saveConfig() { localStorage.setItem('appsScriptUrl', apiUrlInput.value.trim()); }
+        function saveConfig() { 
+            localStorage.setItem('appsScriptUrl', apiUrlInput.value.trim()); 
+        }
         
         function toggleApiPanel() {
             if (apiConfigPanel.style.display === 'flex') {
@@ -404,8 +436,8 @@
         }
 
         function saveHistory() { 
-            localStorage.setItem('chatHistoryJsonV8', JSON.stringify(chatHistory)); 
-            localStorage.setItem('sentMessagesListV8', JSON.stringify(sentMessagesList));
+            localStorage.setItem('chatHistoryJsonV10', JSON.stringify(chatHistory)); 
+            localStorage.setItem('sentMessagesListV10', JSON.stringify(sentMessagesList));
         }
 
         function clearHistory() {
@@ -480,7 +512,7 @@
 
             if (!rawText) return;
             if (!url) { 
-                alert("Vui lòng nhập URL Apps Script bằng cách bấm vào icon ⚙️ bên cạnh tiêu đề!"); 
+                alert("Vui lòng nhập URL Apps Script bằng cách bấm vào icon ⚙️ ở góc trên!"); 
                 apiConfigPanel.style.display = 'flex';
                 apiUrlInput.focus();
                 return; 
@@ -490,7 +522,8 @@
 
             let payloadToSend = rawText;
             try {
-                JSON.parse(rawText);
+                const parsed = JSON.parse(rawText);
+                payloadToSend = JSON.stringify(parsed, null, 2);
             } catch (e) {
                 payloadToSend = JSON.stringify({ message: rawText }, null, 2);
             }
