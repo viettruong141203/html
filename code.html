@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apps Script API Modern Chat</title>
+    <title>Apps Script API Chat</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -26,7 +26,7 @@
         }
 
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: var(--bg-gradient);
             color: var(--text-main);
             display: flex;
@@ -72,6 +72,12 @@
             align-items: center;
         }
 
+        .header-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .header-title {
             font-size: 16px;
             font-weight: 700;
@@ -84,10 +90,26 @@
         .header-title::before {
             content: '';
             display: inline-block;
-            width: 10px;
-            height: 10px;
+            width: 9px;
+            height: 9px;
             background-color: #22c55e;
             border-radius: 50%;
+        }
+
+        .settings-icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+            border-radius: 6px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .settings-icon-btn:hover {
+            background-color: #f3f4f6;
         }
 
         .header-actions {
@@ -122,19 +144,31 @@
             color: #b91c1c;
         }
 
-        .header input {
+        .api-config-panel {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .api-config-panel input {
             width: 100%;
-            padding: 10px 14px;
+            padding: 9px 12px;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             outline: none;
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-main);
             background-color: #f9fafb;
             transition: border-color 0.2s;
         }
 
-        .header input:focus {
+        .api-config-panel input:focus {
             border-color: var(--primary);
             background-color: #fff;
         }
@@ -152,13 +186,14 @@
 
         .message {
             max-width: 88%;
-            padding: 12px 16px;
-            border-radius: 14px;
-            font-size: 14px;
-            line-height: 1.6;
+            padding: 10px 14px;
+            border-radius: 12px;
+            line-height: 1.5;
             word-wrap: break-word;
             white-space: pre-wrap;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            /* Đã giảm kích thước chữ nhỏ gọn hơn */
+            font-size: 12px; 
         }
 
         .message.user {
@@ -166,6 +201,7 @@
             background-color: var(--primary);
             color: white;
             border-bottom-right-radius: 4px;
+            font-family: ui-monospace, monospace;
         }
 
         .message.bot {
@@ -174,7 +210,6 @@
             color: var(--code-text);
             border-bottom-left-radius: 4px;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 13px;
         }
 
         .message.error {
@@ -220,12 +255,12 @@
         }
 
         .history-item {
-            padding: 10px 12px;
+            padding: 8px 10px;
             background: #f8fafc;
             border: 1px solid #f1f5f9;
             border-radius: var(--radius-md);
             margin-bottom: 8px;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             word-break: break-all;
             transition: 0.2s;
@@ -313,13 +348,20 @@
 
         <div class="header">
             <div class="header-top">
-                <span class="header-title">Apps Script API Tester</span>
+                <div class="header-title-wrapper">
+                    <span class="header-title">Apps Script API Tester</span>
+                    <button class="settings-icon-btn" onclick="toggleApiPanel()" title="Cài đặt URL API">⚙️</button>
+                </div>
                 <div class="header-actions">
                     <button class="btn" onclick="toggleHistoryMenu()">📂 Mẫu cũ</button>
                     <button class="btn btn-danger" onclick="clearHistory()">Xóa lịch sử</button>
                 </div>
             </div>
-            <input type="text" id="apiUrl" placeholder="Dán URL Web App Apps Script vào đây..." onchange="saveConfig()">
+            
+            <!-- Phần nhập URL API ẩn/hiện gọn gàng bằng icon ⚙️ -->
+            <div class="api-config-panel" id="apiConfigPanel">
+                <input type="text" id="apiUrl" placeholder="Dán URL Web App Apps Script vào đây (https://script.google.com/.../exec)" onchange="saveConfig()">
+            </div>
         </div>
 
         <div class="chat-window" id="chatWindow"></div>
@@ -336,6 +378,7 @@
         const chatWindow = document.getElementById('chatWindow');
         const messageInput = document.getElementById('messageInput');
         const apiUrlInput = document.getElementById('apiUrl');
+        const apiConfigPanel = document.getElementById('apiConfigPanel');
         const historyDropdown = document.getElementById('historyDropdown');
         const historyListContainer = document.getElementById('historyListContainer');
         
@@ -344,17 +387,21 @@
 
         window.onload = function() {
             const savedUrl = localStorage.getItem('appsScriptUrl');
-            if (savedUrl) apiUrlInput.value = savedUrl;
+            if (savedUrl) {
+                apiUrlInput.value = savedUrl;
+            } else {
+                apiConfigPanel.style.display = 'flex';
+            }
 
-            const savedHistory = localStorage.getItem('chatHistoryModernV5');
+            const savedHistory = localStorage.getItem('chatHistoryJsonV7');
             if (savedHistory) {
                 chatHistory = JSON.parse(savedHistory);
                 renderHistory();
             } else {
-                appendMessage('bot', '{\n  "status": "ready",\n  "message": "Giao diện đã sẵn sàng kết nối API."\n}');
+                appendMessage('bot', '{\n  "status": "ready",\n  "message": "Giao diện đã sẵn sàng. Nhấn vào icon ⚙️ ở góc trên để dán URL API."\n}');
             }
 
-            const savedSent = localStorage.getItem('sentMessagesListV5');
+            const savedSent = localStorage.getItem('sentMessagesListV7');
             if (savedSent) {
                 sentMessagesList = JSON.parse(savedSent);
             }
@@ -362,9 +409,18 @@
 
         function saveConfig() { localStorage.setItem('appsScriptUrl', apiUrlInput.value.trim()); }
         
+        function toggleApiPanel() {
+            if (apiConfigPanel.style.display === 'flex') {
+                apiConfigPanel.style.display = 'none';
+            } else {
+                apiConfigPanel.style.display = 'flex';
+                apiUrlInput.focus();
+            }
+        }
+
         function saveHistory() { 
-            localStorage.setItem('chatHistoryModernV5', JSON.stringify(chatHistory)); 
-            localStorage.setItem('sentMessagesListV5', JSON.stringify(sentMessagesList));
+            localStorage.setItem('chatHistoryJsonV7', JSON.stringify(chatHistory)); 
+            localStorage.setItem('sentMessagesListV7', JSON.stringify(sentMessagesList));
         }
 
         function clearHistory() {
@@ -434,20 +490,32 @@
         }
 
         async function sendMessage() {
-            const exactText = messageInput.value;
+            let rawText = messageInput.value.trim();
             const url = apiUrlInput.value.trim();
 
-            if (!exactText.trim()) return;
-            if (!url) { alert("Vui lòng nhập URL Apps Script trước!"); return; }
+            if (!rawText) return;
+            if (!url) { 
+                alert("Vui lòng nhập URL Apps Script bằng cách bấm vào icon ⚙️ bên cạnh tiêu đề!"); 
+                apiConfigPanel.style.display = 'flex';
+                apiUrlInput.focus();
+                return; 
+            }
 
             historyDropdown.style.display = 'none';
 
-            if (!sentMessagesList.includes(exactText)) {
-                sentMessagesList.push(exactText);
+            let payloadToSend = rawText;
+            try {
+                JSON.parse(rawText);
+            } catch (e) {
+                payloadToSend = JSON.stringify({ message: rawText }, null, 2);
             }
 
-            appendMessage('user', exactText);
-            chatHistory.push({ sender: 'user', text: exactText });
+            if (!sentMessagesList.includes(payloadToSend)) {
+                sentMessagesList.push(payloadToSend);
+            }
+
+            appendMessage('user', payloadToSend);
+            chatHistory.push({ sender: 'user', text: payloadToSend });
             
             messageInput.value = '';
             messageInput.style.height = 'auto';
@@ -458,19 +526,16 @@
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: exactText
+                    body: payloadToSend
                 });
 
                 const responseText = await response.text();
                 
-                // Tự động chuyển đổi phản hồi sang định dạng JSON có xuống dòng & thụt lề chuẩn
                 let formattedJsonText = responseText;
                 try {
                     const jsonObject = JSON.parse(responseText);
                     formattedJsonText = JSON.stringify(jsonObject, null, 2);
-                } catch (e) {
-                    // Giữ nguyên văn bản thô nếu không phải JSON
-                }
+                } catch (e) {}
 
                 appendMessage('bot', formattedJsonText);
                 chatHistory.push({ sender: 'bot', text: formattedJsonText });
