@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bot chat</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><path fill=%22%230084ff%22 d=%22M16 0C7.163 0 0 6.827 0 15.238c0 4.507 1.954 8.553 5.05 11.365V32l4.63-2.54c1.93.535 3.987.828 6.32.828 8.837 0 16-6.827 16-15.238S24.837 0 16 0zm1.09 20.354l-4.11-4.39-8.02 4.39 8.81-9.35 4.19 4.39 7.94-4.39-8.81 9.35z%22/></svg>">
+    
+    <style>
+        :root {
+            --primary: #0084ff;
+            --primary-hover: #006dd6;
+            --bg-gradient: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            --chat-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-secondary: #4b5563;
+            --border-color: #e5e7eb;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+            --radius-lg: 12px;
+            --radius-md: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 100%;
+            height: 100%;
+            max-width: 750px;
+            max-height: 100vh;
+            background-color: var(--chat-bg);
+            border-radius: 0;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            .chat-container {
+                height: 100%;
+                max-height: 850px;
+                border-radius: var(--radius-lg);
+                box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.1);
+            }
+            body {
+                padding: 12px;
+            }
+        }
+
+        .header {
+            padding: 8px 12px;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-title::before {
+            content: '';
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background-color: #22c55e;
+            border-radius: 50%;
+        }
+
+        .settings-icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-icon-btn:hover {
+            background-color: #f3f4f6;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-danger {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            padding: 4px 8px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-danger:hover {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .api-config-panel {
+            display: none;
+            flex-direction: row;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .api-config-panel input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            outline: none;
+            font-size: 12px;
+            color: var(--text-main);
+            background-color: #f9fafb;
+        }
+
+        .api-config-panel input:focus {
+            border-color: var(--primary);
+            background-color: #fff;
+        }
+
+        .save-api-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .save-api-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .chat-window {
+            flex: 1;
+            padding: 10px 12px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background-color: #fafafa;
+        }
+
+        .message {
+            max-width: 90%;
+            padding: 8px 10px;
+            border-radius: 10px;
+            line-height: 1.4;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            font-size: 13px; /* Đã tăng size cho dễ đọc văn bản thuần */
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .msg-text {
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background-color: var(--primary);
+            color: white;
+            border-bottom-right-radius: 3px;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background-color: #e5e7eb;
+            color: var(--text-main);
+            border-bottom-left-radius: 3px;
+        }
+
+        .message.error {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .copy-btn {
+            align-self: flex-end;
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            border-radius: 4px;
+            padding: 4px 6px;
+            cursor: pointer;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            width: 24px;
+            height: 24px;
+        }
+
+        .message.user .copy-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .message.user .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .message.bot .copy-btn {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .message.bot .copy-btn:hover {
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-main);
+        }
+
+        .history-dropdown {
+            position: absolute;
+            bottom: 55px;
+            left: 10px;
+            right: 50px;
+            max-height: 180px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 8px 20px -4px rgba(0,0,0,0.15);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            display: none;
+            z-index: 100;
+            padding: 8px;
+        }
+
+        .history-dropdown-header {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item {
+            padding: 6px 8px;
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            word-break: break-all;
+        }
+
+        .history-item:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .input-area {
+            padding: 8px 12px;
+            background-color: #ffffff;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 6px;
+            align-items: flex-end;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .input-area textarea {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            outline: none;
+            resize: none;
+            font-family: inherit;
+            font-size: 13px;
+            max-height: 90px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            line-height: 1.4;
+            background-color: #f9fafb;
+            transition: border-color 0.2s;
+        }
+
+        .input-area textarea:focus {
+            border-color: var(--primary);
+            background-color: #fff;
+        }
+
+        .icon-action-btn {
+            background: #f3f4f6;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .icon-action-btn:hover {
+            background-color: #e5e7eb;
+        }
+
+        .input-area button.send-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .input-area button.send-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .input-area button.send-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="history-dropdown" id="historyDropdown">
+            <div class="history-dropdown-header">
+                <span>Chọn mẫu tin nhắn:</span>
+                <span style="cursor:pointer; color: #dc2626; font-weight: 500;" onclick="toggleHistoryMenu()">✕</span>
+            </div>
+            <div id="historyListContainer"></div>
+        </div>
+
+        <div class="header">
+            <div class="header-top">
+                <div class="header-title-wrapper">
+                    <span class="header-title">Bot chat</span>
+                    <button class="settings-icon-btn" onclick="toggleApiPanel()">⚙️</button>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-danger" onclick="clearHistory()">Xóa</button>
+                </div>
+            </div>
+            
+            <div class="api-config-panel" id="apiConfigPanel">
+                <input type="text" id="apiUrl" placeholder="Dán URL Web App (https://script.google.com/.../exec)">
+                <button class="save-api-btn" onclick="saveAndHideConfig()">Lưu</button>
+            </div>
+        </div>
+
+        <div class="chat-window" id="chatWindow"></div>
+
+        <div class="input-area">
+            <button class="icon-action-btn" onclick="toggleHistoryMenu()">📂</button>
+            <textarea id="messageInput" placeholder="Nhập nội dung tin nhắn..." rows="1" oninput="autoResizeTextarea(this)"></textarea>
+            <button class="send-btn" onclick="sendMessage()">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const chatWindow = document.getElementById('chatWindow');
+        const messageInput = document.getElementById('messageInput');
+        const apiUrlInput = document.getElementById('apiUrl');
+        const apiConfigPanel = document.getElementById('apiConfigPanel');
+        const historyDropdown = document.getElementById('historyDropdown');
+        const historyListContainer = document.getElementById('historyListContainer');
+        
+        let chatHistory = [];
+        let sentMessagesList = [];
+
+        window.onload = function() {
+            const savedUrl = localStorage.getItem('appsScriptUrlText');
+            if (savedUrl) {
+                apiUrlInput.value = savedUrl;
+            } else {
+                apiConfigPanel.style.display = 'flex';
+            }
+
+            const savedHistory = localStorage.getItem('chatHistoryTextV1');
+            if (savedHistory) {
+                try {
+                    chatHistory = JSON.parse(savedHistory);
+                    renderHistory();
+                } catch (e) {
+                    chatHistory = [];
+                }
+            } else {
+                appendMessage('bot', 'Hệ thống đã sẵn sàng.');
+            }
+
+            const savedSent = localStorage.getItem('sentMessagesListTextV1');
+            if (savedSent) {
+                try {
+                    sentMessagesList = JSON.parse(savedSent);
+                } catch (e) {
+                    sentMessagesList = [];
+                }
+            }
+        };
+
+        function saveAndHideConfig() { 
+            const urlVal = apiUrlInput.value.trim();
+            localStorage.setItem('appsScriptUrlText', urlVal);
+            apiConfigPanel.style.display = 'none';
+        }
+        
+        function toggleApiPanel() {
+            if (apiConfigPanel.style.display === 'flex') {
+                apiConfigPanel.style.display = 'none';
+            } else {
+                apiConfigPanel.style.display = 'flex';
+                apiUrlInput.focus();
+            }
+        }
+
+        function saveHistory() { 
+            localStorage.setItem('chatHistoryTextV1', JSON.stringify(chatHistory)); 
+            localStorage.setItem('sentMessagesListTextV1', JSON.stringify(sentMessagesList));
+        }
+
+        function clearHistory() {
+            if(confirm('Xóa toàn bộ lịch sử?')) {
+                chatHistory = [];
+                sentMessagesList = [];
+                saveHistory();
+                chatWindow.innerHTML = '';
+                historyDropdown.style.display = 'none';
+            }
+        }
+
+        function toggleHistoryMenu() {
+            if (historyDropdown.style.display === 'block') {
+                historyDropdown.style.display = 'none';
+            } else {
+                renderHistoryDropdownList();
+                historyDropdown.style.display = 'block';
+            }
+        }
+
+        function renderHistoryDropdownList() {
+            historyListContainer.innerHTML = '';
+            if (sentMessagesList.length === 0) {
+                historyListContainer.innerHTML = '<div style="padding: 6px; color: #6b7280; font-size: 11px; text-align: center;">Chưa có mẫu tin nhắn.</div>';
+                return;
+            }
+
+            const recentMsgs = [...sentMessagesList].reverse();
+            recentMsgs.forEach(msg => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.textContent = msg;
+                item.onclick = () => {
+                    messageInput.value = msg;
+                    autoResizeTextarea(messageInput);
+                    historyDropdown.style.display = 'none';
+                    messageInput.focus();
+                };
+                historyListContainer.appendChild(item);
+            });
+        }
+
+        function autoResizeTextarea(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 90) + 'px';
+        }
+
+        function appendMessage(sender, text, isError = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender} ${isError ? 'error' : ''}`;
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'msg-text';
+            textDiv.textContent = text;
+            msgDiv.appendChild(textDiv);
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.title = 'Sao chép';
+            
+            const iconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+            const checkSvg = `✅`;
+            
+            copyBtn.innerHTML = iconSvg;
+            
+            copyBtn.onclick = function() {
+                navigator.clipboard.writeText(text).then(() => {
+                    copyBtn.innerHTML = checkSvg;
+                    setTimeout(() => {
+                        copyBtn.innerHTML = iconSvg;
+                    }, 2000);
+                }).catch(err => {
+                    alert('Lỗi sao chép: ' + err);
+                });
+            };
+            msgDiv.appendChild(copyBtn);
+
+            chatWindow.appendChild(msgDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function renderHistory() {
+            chatWindow.innerHTML = '';
+            chatHistory.forEach(msg => appendMessage(msg.sender, msg.text, msg.isError));
+        }
+
+        async function sendMessage() {
+            let rawText = messageInput.value.trim();
+            const url = apiUrlInput.value.trim();
+
+            if (!rawText) return;
+            if (!url) { 
+                alert("Vui lòng nhập và Lưu URL Apps Script qua icon ⚙️!"); 
+                apiConfigPanel.style.display = 'flex';
+                apiUrlInput.focus();
+                return; 
+            }
+
+            historyDropdown.style.display = 'none';
+
+            // Gửi trực tiếp văn bản thuần túy (Plain Text)
+            let payloadToSend = rawText;
+
+            if (!sentMessagesList.includes(payloadToSend)) {
+                sentMessagesList.push(payloadToSend);
+            }
+
+            appendMessage('user', payloadToSend);
+            chatHistory.push({ sender: 'user', text: payloadToSend });
+            
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            saveHistory();
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: payloadToSend
+                });
+
+                // Nhận trực tiếp văn bản thuần túy
+                const responseText = await response.text();
+                
+                appendMessage('bot', responseText);
+                chatHistory.push({ sender: 'bot', text: responseText });
+
+            } catch (error) {
+                const errorMsg = `Lỗi kết nối: ${error.message}`;
+                appendMessage('bot', errorMsg, true);
+                chatHistory.push({ sender: 'bot', text: errorMsg, isError: true });
+            } finally {
+                saveHistory();
+            }
+        }
+    </script>
+</body>
+</html>
