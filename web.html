@@ -1,319 +1,258 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trình Duyệt Web Toàn Màn Hình</title>
-  <style>
-    :root {
-      --bg-sidebar: rgba(24, 28, 33, 0.95);
-      --primary: #3498db;
-      --text-light: #f5f6fa;
-    }
-    
-    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; height: 100vh; overflow: hidden; background-color: #0f1115; }
-    
-    /* Khung iframe toàn màn hình */
-    .iframe-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; display: flex; justify-content: center; align-items: center; color: #555;}
-    .iframe-container span.placeholder { font-size: 16px; font-style: italic; opacity: 0.7; }
-    iframe { width: 100%; height: 100%; border: none; background: #fff; position: relative; z-index: 2;}
-
-    /* Cụm 2 icon nổi dạng SVG (Trong suốt, không khung tròn) */
-    .floating-controls {
-      position: fixed; top: 20px; left: 20px; z-index: 100;
-      display: flex; gap: 15px; align-items: center;
-    }
-
-    .float-btn {
-      background: none; border: none; padding: 0; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.25s ease;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); /* Đổ bóng giúp icon nổi bật trên mọi nền */
-    }
-
-    .float-btn svg {
-      width: 26px; height: 26px;
-      fill: none;
-      stroke: rgba(255, 255, 255, 0.85); /* Màu trắng mờ tinh tế */
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      transition: all 0.25s ease;
-    }
-    
-    .float-btn:hover svg { 
-      stroke: #3498db; /* Đổi sang màu xanh khi rê chuột */
-      transform: scale(1.15); 
-    }
-
-    /* Lớp phủ làm tối màn hình khi mở menu */
-    .overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.4); z-index: 101;
-      opacity: 0; visibility: hidden; transition: 0.3s;
-    }
-    .overlay.show { opacity: 1; visibility: visible; }
-
-    /* Thanh điều hướng tối giản */
-    .sidebar { 
-      position: fixed; top: 0; left: -320px; width: 280px; height: 100vh; 
-      background: var(--bg-sidebar); backdrop-filter: blur(10px);
-      color: var(--text-light); display: flex; flex-direction: column; z-index: 102;
-      box-shadow: 5px 0 20px rgba(0,0,0,0.5); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .sidebar.open { left: 0; }
-
-    .sidebar-header { padding: 25px 20px 15px; display: flex; flex-direction: column; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .header-top { display: flex; justify-content: space-between; align-items: center; }
-    .header-top h3 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: 0.5px; }
-    .close-btn { background: none; border: none; color: #aaa; font-size: 20px; cursor: pointer; padding: 0; transition: color 0.2s; }
-    .close-btn:hover { color: #fff; }
-
-    .action-buttons { display: flex; gap: 10px; }
-    .btn-action { 
-      flex: 1; padding: 8px; border: none; border-radius: 20px; 
-      font-size: 13px; font-weight: 600; cursor: pointer; color: #fff; transition: 0.2s; 
-    }
-    .btn-add { background: var(--primary); }
-    .btn-add:hover { background: #2980b9; }
-    .btn-refresh { background: rgba(255,255,255,0.1); }
-    .btn-refresh:hover { background: rgba(255,255,255,0.2); }
-
-    .nav-list { list-style: none; padding: 10px 0; margin: 0; overflow-y: auto; flex: 1; }
-    .nav-item { 
-      padding: 12px 20px; margin: 4px 10px; border-radius: 8px;
-      cursor: pointer; transition: 0.2s; font-size: 14px;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .nav-item::before { content: "•"; color: #555; font-size: 18px; }
-    .nav-item:hover { background: rgba(255,255,255,0.05); }
-    .nav-item.active { background: rgba(52, 152, 219, 0.15); color: var(--primary); font-weight: 500; }
-    .nav-item.active::before { color: var(--primary); }
-    
-    .loading-text { padding: 20px; text-align: center; color: #7f8c8d; font-size: 13px; }
-
-    /* Modal Form tối giản */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); display: none; justify-content: center; align-items: center; z-index: 105; }
-    .modal { background: #fff; padding: 30px; border-radius: 16px; width: 85%; max-width: 360px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-    .modal h3 { margin: 0 0 20px 0; color: #2c3e50; text-align: center; font-size: 18px; }
-    .modal label { display: block; margin-bottom: 6px; font-weight: 500; color: #7f8c8d; font-size: 13px;}
-    .modal input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #dfe6e9; border-radius: 8px; box-sizing: border-box; font-size: 14px; outline: none; transition: border 0.2s;}
-    .modal input:focus { border-color: var(--primary); }
-    
-    .modal-actions { display: flex; gap: 12px;}
-    .btn-save { flex: 1; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;}
-    .btn-cancel { flex: 1; padding: 12px; background: #ecf0f1; color: #7f8c8d; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình Tạo VietQR Deeplink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Custom scrollbar for text area and pre */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Pulse animation for the main action button */
+        @keyframes subtle-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .btn-pulse {
+            animation: subtle-pulse 2s infinite;
+        }
+    </style>
 </head>
-<body>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
 
-  <!-- Cụm 2 icon SVG cao cấp, trong suốt -->
-  <div class="floating-controls">
-    <!-- Icon Menu (3 gạch ngang mềm mại) -->
-    <button class="float-btn" onclick="openSidebar()" title="Mở menu">
-      <svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
-    </button>
-    <!-- Icon Phóng to toàn màn hình (Khung mở rộng) -->
-    <button class="float-btn" onclick="toggleFullScreen()" title="Phóng to toàn màn hình">
-      <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-    </button>
-  </div>
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-green-600 p-1.5 rounded-lg text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-gray-900">VietQR Deeplink Generator</h1>
+            </div>
+            <div class="text-sm font-medium text-gray-500 hidden sm:block">
+                Developer Tool
+            </div>
+        </div>
+    </header>
 
-  <!-- Lớp phủ màn hình -->
-  <div class="overlay" id="pageOverlay" onclick="closeSidebar()"></div>
+    <!-- Main Content -->
+    <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-900">Tạo Link Thanh Toán Tự Động</h2>
+            <p class="mt-2 text-gray-600">Nhập các tham số bên dưới để tự động tạo deeplink mở ứng dụng ngân hàng và kiểm tra nghiệm thu.</p>
+        </div>
 
-  <!-- Thanh điều hướng ẩn (Sidebar) -->
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="header-top">
-        <h3>Menu Trang</h3>
-        <button class="close-btn" onclick="closeSidebar()">✕</button>
-      </div>
-      <div class="action-buttons">
-        <button class="btn-action btn-add" onclick="openModal()">+ Thêm Mới</button>
-        <button class="btn-action btn-refresh" onclick="fetchData()">↻ Tải Lại</button>
-      </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Column: Form Inputs -->
+            <div class="lg:col-span-5 space-y-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="text-lg font-semibold border-b border-gray-100 pb-3 mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                    Tham số cấu hình
+                </h3>
+                
+                <!-- App ID -->
+                <div>
+                    <label for="appId" class="block text-sm font-medium text-gray-700 mb-1">Mã App ngân hàng (app)</label>
+                    <input type="text" id="appId" value="icb" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" placeholder="vd: icb, mb, vcb, bidv...">
+                    <p class="mt-1 text-xs text-gray-500">Mã của app dùng để thanh toán (vd: icb = VietinBank).</p>
+                </div>
+
+                <!-- Amount -->
+                <div>
+                    <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Số tiền (am)</label>
+                    <div class="relative">
+                        <input type="number" id="amount" value="2000" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all pr-12" placeholder="0">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                            <span class="text-gray-500 font-medium text-sm">VNĐ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="desc" class="block text-sm font-medium text-gray-700 mb-1">Nội dung (tn)</label>
+                    <input type="text" id="desc" value="tra tien tra sua cho bo" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" placeholder="Không dấu, cách nhau bởi khoảng trắng">
+                    <p class="mt-1 text-xs text-gray-500">Khoảng trắng sẽ tự động được chuyển thành dấu cộng (+).</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Receiver Account -->
+                    <div>
+                        <label for="account" class="block text-sm font-medium text-gray-700 mb-1">STK Nhận (ba)</label>
+                        <input type="text" id="account" value="123456" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" placeholder="Số tài khoản">
+                    </div>
+
+                    <!-- Receiver Bank -->
+                    <div>
+                        <label for="bank" class="block text-sm font-medium text-gray-700 mb-1">Mã NH Nhận</label>
+                        <input type="text" id="bank" value="MB" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all uppercase" placeholder="vd: MB, ICB">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Output & Testing -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- Testing Button Section -->
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                    <div class="mb-4">
+                        <span class="inline-flex items-center justify-center h-16 w-16 rounded-full bg-green-100 text-green-600 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        </span>
+                        <h3 class="text-xl font-bold text-gray-900 mb-1">Kiểm thử Deeplink</h3>
+                        <p class="text-sm text-gray-500">Ấn vào nút bên dưới để mô phỏng mở ứng dụng ngân hàng trên thiết bị thực.</p>
+                    </div>
+                    
+                    <a id="actionBtn" href="#" class="btn-pulse inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 text-lg font-bold text-white transition-all duration-200 bg-green-600 border border-transparent rounded-xl shadow-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transform hover:-translate-y-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                        Ấn vào đây để mở App ngân hàng
+                    </a>
+                </div>
+
+                <!-- Generated URL Section -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                            URL đã tạo (Generated Link)
+                        </h3>
+                        <button onclick="copyToClipboard('generatedUrl')" class="text-xs font-medium text-green-600 hover:text-green-800 bg-green-50 px-2.5 py-1 rounded transition-colors flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            Copy URL
+                        </button>
+                    </div>
+                    <textarea id="generatedUrl" readonly class="w-full h-24 p-3 bg-gray-50 text-gray-700 text-sm font-mono border border-gray-200 rounded-lg outline-none resize-none break-all"></textarea>
+                </div>
+
+                <!-- Code Snippet Section -->
+                <div class="bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-800 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-3 border-b border-gray-700 pb-3">
+                        <h3 class="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                            HTML Implementation
+                        </h3>
+                        <button onclick="copyToClipboard('codeSnippet')" class="text-xs font-medium text-gray-400 hover:text-white bg-gray-800 px-2.5 py-1 rounded transition-colors flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            Copy Code
+                        </button>
+                    </div>
+                    <pre class="overflow-x-auto text-sm"><code id="codeSnippet" class="text-green-400 font-mono leading-relaxed"></code></pre>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-xl transform transition-all duration-300 translate-y-20 opacity-0 flex items-center gap-2 z-50">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        <span id="toastMsg">Đã copy vào clipboard!</span>
     </div>
-    <ul class="nav-list" id="navList">
-      <li class="loading-text">Đang tải dữ liệu...</li>
-    </ul>
-  </div>
 
-  <!-- Khung nội dung Full Màn Hình -->
-  <div class="iframe-container" id="containerScreen">
-    <span class="placeholder">Vui lòng chọn một trang từ menu...</span>
-    <iframe id="contentFrame" src="" allowfullscreen style="display: none;"></iframe>
-  </div>
+    <!-- Application Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Select all input elements
+            const inputs = ['appId', 'amount', 'desc', 'account', 'bank'].map(id => document.getElementById(id));
+            const generatedUrlEl = document.getElementById('generatedUrl');
+            const actionBtn = document.getElementById('actionBtn');
+            const codeSnippetEl = document.getElementById('codeSnippet');
 
-  <!-- Popup Form Thêm -->
-  <div class="modal-overlay" id="addModal">
-    <div class="modal">
-      <h3>Thêm Trang Mới</h3>
-      <label>Tên hiển thị</label>
-      <input type="text" id="newName" placeholder="Nhập tên trang...">
-      <label>Đường dẫn (URL)</label>
-      <input type="url" id="newUrl" placeholder="https://...">
-      <div class="modal-actions">
-        <button class="btn-cancel" onclick="closeModal()">Hủy</button>
-        <button class="btn-save" id="btnSave" onclick="saveData()">Lưu Lại</button>
-      </div>
-    </div>
-  </div>
+            // Function to build URL and update DOM
+            function updateLink() {
+                const app = document.getElementById('appId').value.trim() || 'icb';
+                const amount = document.getElementById('amount').value.trim() || '0';
+                // Replace spaces with '+' for the 'tn' parameter
+                const descRaw = document.getElementById('desc').value.trim() || 'Thanh toan';
+                const desc = descRaw.replace(/\s+/g, '+');
+                const account = document.getElementById('account').value.trim() || '0';
+                const bank = document.getElementById('bank').value.trim().toUpperCase() || 'MB';
 
-  <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzU2-uP0jUUia8w74BBQ7U78OUn3d_SE7cEd_LBZJbq2b2g4HCJyFRAOLKMU9p2zb0F/exec"; 
+                // Base redirect URL parameter (static as requested)
+                const redirectUrl = "https://www.vietqr.io/deeplink";
 
-    openSidebar();
-    fetchData();
+                // Construct full URL
+                const url = `https://dl.vietqr.io/pay?app=${app}&am=${amount}&tn=${desc}&ba=${account}@${bank}&url=${redirectUrl}`;
 
-    function toggleFullScreen() {
-      const elem = document.documentElement;
-      if (!document.fullscreenElement) {
-        if (elem.requestFullscreen) {
-          elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) { /* Safari */
-          elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) { /* IE11 */
-          elem.msRequestFullscreen();
-        }
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-          document.msExitFullscreen();
-        }
-      }
-    }
+                // Update Textarea
+                generatedUrlEl.value = url;
+                
+                // Update Button href
+                actionBtn.href = url;
 
-    function openSidebar() {
-      document.getElementById("sidebar").classList.add("open");
-      document.getElementById("pageOverlay").classList.add("show");
-    }
-
-    function closeSidebar() {
-      document.getElementById("sidebar").classList.remove("open");
-      document.getElementById("pageOverlay").classList.remove("show");
-    }
-
-    function openModal() {
-      document.getElementById("newName").value = "";
-      document.getElementById("newUrl").value = "";
-      document.getElementById("addModal").style.display = "flex";
-      closeSidebar(); 
-    }
-
-    function closeModal() {
-      document.getElementById("addModal").style.display = "none";
-    }
-
-    async function fetchData() {
-      const navList = document.getElementById("navList");
-      navList.innerHTML = "<li class='loading-text'>Đang kết nối...</li>";
-      
-      try {
-        const requestPayload = { "sheet": "Home", "action": "get" };
-        const response = await fetch(SCRIPT_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(requestPayload),
-            redirect: "follow"
-        });
-        
-        const data = await response.json();
-        
-        if (data.status !== "success") {
-          navList.innerHTML = `<li class='loading-text' style='color:#e74c3c;'>Lỗi: ${data.message || 'Không xác định'}</li>`;
-          return;
-        }
-        
-        const pages = [];
-        if (data.all_data && Array.isArray(data.all_data)) {
-          data.all_data.forEach(item => {
-            if (item.row !== 1 && item.A && item.B) {
-              pages.push({ name: item.A, url: item.B });
+                // Create and update HTML code snippet
+                const snippet = `<!-- Nút chuyển hướng sang App ngân hàng -->\n<a href="${url}" \n   target="_blank" \n   class="btn-pay">\n    Ấn vào đây để mở App ngân hàng\n</a>`;
+                
+                // Escape HTML for displaying in <pre><code>
+                codeSnippetEl.textContent = snippet;
             }
-          });
-        }
-        
-        renderNavigation(pages);
-      } catch (error) {
-        navList.innerHTML = "<li class='loading-text' style='color:#e74c3c;'>Lỗi kết nối mạng.</li>";
-      }
-    }
 
-    function renderNavigation(pages) {
-      const navList = document.getElementById("navList");
-      navList.innerHTML = ""; 
-      if(pages.length === 0) {
-         navList.innerHTML = "<li class='loading-text'>Danh sách trống</li>";
-         return;
-      }
-      pages.forEach(page => {
-        const li = document.createElement("li");
-        li.className = "nav-item";
-        li.textContent = page.name;
-        li.onclick = () => loadWebPage(page.url, li);
-        navList.appendChild(li);
-      });
-    }
+            // Attach event listeners to update in real-time
+            inputs.forEach(input => {
+                input.addEventListener('input', updateLink);
+            });
 
-    function loadWebPage(url, element) {
-      document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
-      element.classList.add("active");
-      
-      const iframe = document.getElementById("contentFrame");
-      const placeholder = document.querySelector(".placeholder");
-      
-      placeholder.style.display = "none";
-      iframe.src = url;
-      iframe.style.display = "block";
-      
-      closeSidebar(); 
-    }
-
-    async function saveData() {
-      const name = document.getElementById("newName").value.trim();
-      const url = document.getElementById("newUrl").value.trim();
-      const btnSave = document.getElementById("btnSave");
-
-      if (!name || !url) return alert("Vui lòng nhập đủ thông tin!");
-
-      btnSave.textContent = "Đang lưu...";
-      btnSave.disabled = true;
-
-      try {
-        const savePayload = { 
-          "sheet": "Home", 
-          "action": "add", 
-          "A": name, 
-          "B": url 
-        };
-
-        const response = await fetch(SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(savePayload),
-          redirect: "follow"
+            // Initial generation on page load
+            updateLink();
         });
 
-        const result = await response.json();
-        
-        if (result.status === "success" || result.message === "Thành công") {
-          closeModal();
-          openSidebar();
-          fetchData(); 
-        } else {
-          alert("Lỗi từ máy chủ: " + (result.message || "Không xác định"));
+        // Function to copy text to clipboard with feedback
+        function copyToClipboard(elementId) {
+            const el = document.getElementById(elementId);
+            let textToCopy = '';
+            
+            if(el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+                textToCopy = el.value;
+            } else {
+                textToCopy = el.textContent;
+            }
+
+            // Fallback for document.execCommand if clipboard API is restricted in iframes
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy).then(showToast);
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast();
+                } catch (err) {
+                    console.error('Lỗi khi copy: ', err);
+                }
+                textArea.remove();
+            }
         }
-      } catch (error) {
-        alert("Lỗi kết nối. Xin hãy thử lại!");
-      } finally {
-        btnSave.textContent = "Lưu Lại";
-        btnSave.disabled = false;
-      }
-    }
-  </script>
+
+        // Toast notification logic
+        let toastTimeout;
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+    </script>
 </body>
 </html>
