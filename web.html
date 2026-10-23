@@ -1,258 +1,96 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trình Tạo VietQR Deeplink</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Xác nhận thanh toán</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
+            background-color: #f3f4f6; /* Nền xám nhạt giúp nổi bật card */
+            -webkit-tap-highlight-color: transparent;
         }
-        /* Custom scrollbar for text area and pre */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* Pulse animation for the main action button */
-        @keyframes subtle-pulse {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        .pulse-btn {
+            animation: pulse-shadow 2s infinite;
         }
-        .btn-pulse {
-            animation: subtle-pulse 2s infinite;
+        @keyframes pulse-shadow {
+            0% { box-shadow: 0 0 0 0 rgba(13, 92, 182, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(13, 92, 182, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(13, 92, 182, 0); }
         }
     </style>
 </head>
-<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+<body class="min-h-screen flex items-center justify-center p-4">
 
-    <!-- Header -->
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="bg-green-600 p-1.5 rounded-lg text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                </div>
-                <h1 class="text-xl font-bold tracking-tight text-gray-900">VietQR Deeplink Generator</h1>
-            </div>
-            <div class="text-sm font-medium text-gray-500 hidden sm:block">
-                Developer Tool
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <!-- Payment Card Container -->
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-xl overflow-hidden border border-gray-100">
         
-        <div class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-900">Tạo Link Thanh Toán Tự Động</h2>
-            <p class="mt-2 text-gray-600">Nhập các tham số bên dưới để tự động tạo deeplink mở ứng dụng ngân hàng và kiểm tra nghiệm thu.</p>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Header (Màu xanh đặc trưng của ngân hàng) -->
+        <div class="bg-[#0D5CB6] px-6 py-8 text-center relative overflow-hidden">
+            <!-- Background pattern (tùy chọn) -->
+            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
             
-            <!-- Left Column: Form Inputs -->
-            <div class="lg:col-span-5 space-y-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 class="text-lg font-semibold border-b border-gray-100 pb-3 mb-4 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                    Tham số cấu hình
-                </h3>
-                
-                <!-- App ID -->
-                <div>
-                    <label for="appId" class="block text-sm font-medium text-gray-700 mb-1">Mã App ngân hàng (app)</label>
-                    <input type="text" id="appId" value="icb" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" placeholder="vd: icb, mb, vcb, bidv...">
-                    <p class="mt-1 text-xs text-gray-500">Mã của app dùng để thanh toán (vd: icb = VietinBank).</p>
+            <div class="relative z-10 flex flex-col items-center">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-3 shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0D5CB6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
                 </div>
-
-                <!-- Amount -->
-                <div>
-                    <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Số tiền (am)</label>
-                    <div class="relative">
-                        <input type="number" id="amount" value="2000" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all pr-12" placeholder="0">
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                            <span class="text-gray-500 font-medium text-sm">VNĐ</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Description -->
-                <div>
-                    <label for="desc" class="block text-sm font-medium text-gray-700 mb-1">Nội dung (tn)</label>
-                    <input type="text" id="desc" value="tra tien tra sua cho bo" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" placeholder="Không dấu, cách nhau bởi khoảng trắng">
-                    <p class="mt-1 text-xs text-gray-500">Khoảng trắng sẽ tự động được chuyển thành dấu cộng (+).</p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Receiver Account -->
-                    <div>
-                        <label for="account" class="block text-sm font-medium text-gray-700 mb-1">STK Nhận (ba)</label>
-                        <input type="text" id="account" value="123456" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" placeholder="Số tài khoản">
-                    </div>
-
-                    <!-- Receiver Bank -->
-                    <div>
-                        <label for="bank" class="block text-sm font-medium text-gray-700 mb-1">Mã NH Nhận</label>
-                        <input type="text" id="bank" value="MB" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all uppercase" placeholder="vd: MB, ICB">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column: Output & Testing -->
-            <div class="lg:col-span-7 space-y-6">
-                
-                <!-- Testing Button Section -->
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-                    <div class="mb-4">
-                        <span class="inline-flex items-center justify-center h-16 w-16 rounded-full bg-green-100 text-green-600 mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                        </span>
-                        <h3 class="text-xl font-bold text-gray-900 mb-1">Kiểm thử Deeplink</h3>
-                        <p class="text-sm text-gray-500">Ấn vào nút bên dưới để mô phỏng mở ứng dụng ngân hàng trên thiết bị thực.</p>
-                    </div>
-                    
-                    <a id="actionBtn" href="#" class="btn-pulse inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 text-lg font-bold text-white transition-all duration-200 bg-green-600 border border-transparent rounded-xl shadow-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transform hover:-translate-y-0.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                        Ấn vào đây để mở App ngân hàng
-                    </a>
-                </div>
-
-                <!-- Generated URL Section -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                            URL đã tạo (Generated Link)
-                        </h3>
-                        <button onclick="copyToClipboard('generatedUrl')" class="text-xs font-medium text-green-600 hover:text-green-800 bg-green-50 px-2.5 py-1 rounded transition-colors flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            Copy URL
-                        </button>
-                    </div>
-                    <textarea id="generatedUrl" readonly class="w-full h-24 p-3 bg-gray-50 text-gray-700 text-sm font-mono border border-gray-200 rounded-lg outline-none resize-none break-all"></textarea>
-                </div>
-
-                <!-- Code Snippet Section -->
-                <div class="bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-800 relative overflow-hidden">
-                    <div class="flex items-center justify-between mb-3 border-b border-gray-700 pb-3">
-                        <h3 class="text-sm font-semibold text-gray-300 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-                            HTML Implementation
-                        </h3>
-                        <button onclick="copyToClipboard('codeSnippet')" class="text-xs font-medium text-gray-400 hover:text-white bg-gray-800 px-2.5 py-1 rounded transition-colors flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            Copy Code
-                        </button>
-                    </div>
-                    <pre class="overflow-x-auto text-sm"><code id="codeSnippet" class="text-green-400 font-mono leading-relaxed"></code></pre>
-                </div>
-
+                <h1 class="text-white text-lg font-medium opacity-90">Xác nhận thanh toán</h1>
+                <p class="text-white text-3xl font-bold mt-1">2,000 VND</p>
             </div>
         </div>
-    </main>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-xl transform transition-all duration-300 translate-y-20 opacity-0 flex items-center gap-2 z-50">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-        <span id="toastMsg">Đã copy vào clipboard!</span>
+        <!-- Order Details -->
+        <div class="p-6">
+            <h2 class="text-sm font-semibold text-gray-800 mb-4 uppercase tracking-wider">Thông tin giao dịch</h2>
+            
+            <div class="space-y-4 text-sm">
+                <!-- Dòng thông tin 1 -->
+                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <span class="text-gray-500">Ngân hàng nhận</span>
+                    <span class="font-semibold text-gray-800 text-right">MBBank</span>
+                </div>
+                
+                <!-- Dòng thông tin 2 -->
+                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <span class="text-gray-500">Số tài khoản</span>
+                    <span class="font-mono font-semibold text-gray-800 text-right text-base">2000</span>
+                </div>
+                
+                <!-- Dòng thông tin 3 -->
+                <div class="flex flex-col gap-1 border-b border-gray-100 pb-3">
+                    <span class="text-gray-500">Nội dung chuyển khoản</span>
+                    <span class="font-medium text-gray-800 bg-gray-50 p-2 rounded-lg break-words">tra tien tra sua cho bo</span>
+                </div>
+            </div>
+
+            <!-- Nút Action (QUAN TRỌNG: Không dùng target="_blank") -->
+            <div class="mt-8">
+                <a 
+                    href="https://dl.vietqr.io/pay?app=icb&am=2000&tn=tra+tien+tra+sua+cho+bo&ba=2000@MB&url=https://www.vietqr.io/deeplink" 
+                    class="pulse-btn w-full flex items-center justify-center py-4 px-4 bg-[#0D5CB6] hover:bg-blue-800 text-white text-base font-bold rounded-xl transition-colors shadow-lg shadow-blue-500/30"
+                >
+                    Mở App VietinBank Ngay
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2">
+                        <path d="M5 12h14"></path>
+                        <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                </a>
+            </div>
+
+            <!-- Footer / Hướng dẫn -->
+            <div class="mt-5 text-center">
+                <p class="text-xs text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1 -mt-0.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    Hệ thống sẽ tự động mở ứng dụng ngân hàng trên máy bạn. Vui lòng kiểm tra lại thông tin trước khi xác nhận trên App.
+                </p>
+            </div>
+        </div>
     </div>
 
-    <!-- Application Logic -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Select all input elements
-            const inputs = ['appId', 'amount', 'desc', 'account', 'bank'].map(id => document.getElementById(id));
-            const generatedUrlEl = document.getElementById('generatedUrl');
-            const actionBtn = document.getElementById('actionBtn');
-            const codeSnippetEl = document.getElementById('codeSnippet');
-
-            // Function to build URL and update DOM
-            function updateLink() {
-                const app = document.getElementById('appId').value.trim() || 'icb';
-                const amount = document.getElementById('amount').value.trim() || '0';
-                // Replace spaces with '+' for the 'tn' parameter
-                const descRaw = document.getElementById('desc').value.trim() || 'Thanh toan';
-                const desc = descRaw.replace(/\s+/g, '+');
-                const account = document.getElementById('account').value.trim() || '0';
-                const bank = document.getElementById('bank').value.trim().toUpperCase() || 'MB';
-
-                // Base redirect URL parameter (static as requested)
-                const redirectUrl = "https://www.vietqr.io/deeplink";
-
-                // Construct full URL
-                const url = `https://dl.vietqr.io/pay?app=${app}&am=${amount}&tn=${desc}&ba=${account}@${bank}&url=${redirectUrl}`;
-
-                // Update Textarea
-                generatedUrlEl.value = url;
-                
-                // Update Button href
-                actionBtn.href = url;
-
-                // Create and update HTML code snippet
-                const snippet = `<!-- Nút chuyển hướng sang App ngân hàng -->\n<a href="${url}" \n   target="_blank" \n   class="btn-pay">\n    Ấn vào đây để mở App ngân hàng\n</a>`;
-                
-                // Escape HTML for displaying in <pre><code>
-                codeSnippetEl.textContent = snippet;
-            }
-
-            // Attach event listeners to update in real-time
-            inputs.forEach(input => {
-                input.addEventListener('input', updateLink);
-            });
-
-            // Initial generation on page load
-            updateLink();
-        });
-
-        // Function to copy text to clipboard with feedback
-        function copyToClipboard(elementId) {
-            const el = document.getElementById(elementId);
-            let textToCopy = '';
-            
-            if(el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
-                textToCopy = el.value;
-            } else {
-                textToCopy = el.textContent;
-            }
-
-            // Fallback for document.execCommand if clipboard API is restricted in iframes
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(textToCopy).then(showToast);
-            } else {
-                const textArea = document.createElement("textarea");
-                textArea.value = textToCopy;
-                textArea.style.position = "fixed";
-                textArea.style.left = "-999999px";
-                textArea.style.top = "-999999px";
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    showToast();
-                } catch (err) {
-                    console.error('Lỗi khi copy: ', err);
-                }
-                textArea.remove();
-            }
-        }
-
-        // Toast notification logic
-        let toastTimeout;
-        function showToast() {
-            const toast = document.getElementById('toast');
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 2500);
-        }
-    </script>
 </body>
 </html>
